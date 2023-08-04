@@ -54,17 +54,10 @@ def load_data(gender, measure):
     df.rename(columns={"Age": "Day"}, inplace=True)
     return df
 
-# Function to display the welcome message based on gender
-def display_welcome_message(gender):
-    if gender == "Boys":
-        st.write("Welcome to the Boys section!")
-    else:
-        st.write("Welcome to the Girls section!")
-
 # Function to create the Plotly plot
-def create_plot(df, measure, df_baby=None):
+def create_plot(df, measure, gender, df_baby=None):
     fig = px.line(df, x="Day", y=["P01", "P25", "P50", "P75", "P99"],
-                  title=f"Time Evolution of {measure} Percentiles",
+                  title=f"Time Evolution of {measure} Percentiles for {gender}",
                   labels={"Day": "Days", "value": MEASURES_UNITS[measure]},
                   line_shape="vh",
                   color_discrete_map={
@@ -111,16 +104,12 @@ def sidebar_menu(option):
 
 def evolution_page(df, measure, gender):
 
+        st.title("Values Evolution")
         # Handle file uploads
         df_baby = handle_file_upload()
 
-        # Display welcome message based on gender
-        display_welcome_message(gender)
-
         # Create the Plotly plot
-        fig = create_plot(df, measure, df_baby)
-
-
+        fig = create_plot(df, measure, gender, df_baby)
 
         # Show the Plotly plot using st.plotly_chart()
         st.plotly_chart(fig)
@@ -137,12 +126,14 @@ def evolution_page(df, measure, gender):
             fig = go.Figure(data=[bar_trace])
 
             # Update the layout if needed
-            fig.update_layout(title="Bar Plot from Table", xaxis_title="Day", yaxis_title="w")
+            fig.update_layout(title="Percentile evolution", xaxis_title="Day", yaxis_title=f"{measure} percentile")
 
             # Show the plot using st.plotly_chart()
             st.plotly_chart(fig)
 
 def calculator_page(df, measure, gender):
+    st.title("Percentile Calculator")
+
     # Add a date input widget
     selected_date = st.date_input("Select born date")
     # Calculate the difference between the selected date and today
@@ -169,12 +160,18 @@ def calculator_page(df, measure, gender):
     formatted_value = "{:.1f}%".format(percentile)
     st.write("Entered numeric value:", formatted_value)
 
+def user_manual():
+    # Read the contents of the Markdown file
+    with open("user_manual.md", "r") as file:
+        markdown_content = file.read()
+
+    # Display the Markdown content in the app
+    st.markdown(markdown_content)
 
 def main():
-    st.title("Hello, World!")
 
     # Add a sidebar with options
-    option = st.sidebar.radio("Select option", ("Calculator", "Evolution"))
+    option = st.sidebar.radio("Select option", ("User Manual", "Calculator", "Evolution"))
 
     # Show the dropdown menu for selecting the metric
     measure = st.sidebar.selectbox("Select Metric", ["Weight", "Height", "Head Circumference"])
@@ -185,7 +182,9 @@ def main():
     # Load the data
     df = load_data(gender=gender, measure=measure)
 
-    if option=="Evolution":
+    if option=="User Manual":
+        user_manual()
+    elif option=="Evolution":
         evolution_page(df, measure, gender)
     else:
         calculator_page(df, measure, gender)
@@ -193,3 +192,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
