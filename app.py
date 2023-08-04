@@ -41,6 +41,12 @@ MEASURES_PROMT_MSG = {
     "Head Circumference": "enter head circumference cm. value"
 }
 
+MEASURES_INPUT = {
+    "Weight": "w",
+    "Height": "h",
+    "Head Circumference": "hc"
+}
+
 # Function to load data
 def load_data(gender, measure):
     measure_code = MEASURES_CODES[measure]
@@ -60,19 +66,19 @@ def create_plot(df, measure, df_baby=None):
     fig = px.line(df, x="Day", y=["P01", "P25", "P50", "P75", "P99"],
                   title=f"Time Evolution of {measure} Percentiles",
                   labels={"Day": "Days", "value": MEASURES_UNITS[measure]},
-                  line_shape="linear",
+                  line_shape="vh",
                   color_discrete_map={
-                      "P01": "rgba(255, 0, 0, 0.2)",
-                      "P25": "rgba(255, 0, 0, 0.4)",
-                      "P50": "rgba(255, 0, 0, 1.0)",
-                      "P75": "rgba(255, 0, 0, 0.4)",
-                      "P99": "rgba(255, 0, 0, 0.2)"
+                      "P01": "rgba(160, 160, 160, 0.2)",
+                      "P25": "rgba(160, 160, 160, 0.4)",
+                      "P50": "rgba(160, 160, 160, 1.0)",
+                      "P75": "rgba(160, 160, 160, 0.4)",
+                      "P99": "rgba(160, 160, 160, 0.2)"
                   })
 
     # Add a new red line to the graph
     if df_baby is not None:
-        fig.add_trace(px.line(df_baby, x="day", y="w", line_shape="linear",color_discrete_map={
-                      "w": "rgba(255, 0, 0, 1.0)"
+        fig.add_trace(px.line(df_baby, x="day", y=MEASURES_INPUT[measure], line_shape="linear",  color_discrete_map={
+                      MEASURES_INPUT[measure]: "rgba(0, 0, 255, 1.0)"
                   }).data[0])
 
 
@@ -84,6 +90,9 @@ def handle_file_upload():
     uploaded_file = st.sidebar.file_uploader("Upload an Excel file", type=["xls", "xlsx"])
     if uploaded_file is not None:
         df = pd.read_excel(uploaded_file)
+        df["w"] = df["w"].interpolate()
+        df["h"] = df["h"].interpolate()
+        df["hc"] = df["hc"].interpolate()
         return df
 
 def sidebar_menu(option):
@@ -108,10 +117,6 @@ def evolution_page(df, measure, gender):
         # Display welcome message based on gender
         display_welcome_message(gender)
 
-
-
-
-
         # Create the Plotly plot
         fig = create_plot(df, measure, df_baby)
 
@@ -121,7 +126,10 @@ def evolution_page(df, measure, gender):
         st.plotly_chart(fig)
 
         if df_baby is not None:
-            df_baby["P"] = df_baby.apply(lambda x: get_percentile(x.w, df, x.day), axis=1)
+
+            column = MEASURES_INPUT[measure]
+            df_baby["P"] = df_baby.apply(lambda x: get_percentile(x[column], df, x.day), axis=1)
+
             bar_trace = go.Bar(x=df_baby.day, y=df_baby.P)
 
 
@@ -171,8 +179,6 @@ def main():
     # Show the dropdown menu for selecting the metric
     measure = st.sidebar.selectbox("Select Metric", ["Weight", "Height", "Head Circumference"])
 
-
-
     # Add a sidebar with options "Boys" and "Girls"
     gender = st.sidebar.radio("Select Gender", ("Boys", "Girls"))
 
@@ -183,14 +189,6 @@ def main():
         evolution_page(df, measure, gender)
     else:
         calculator_page(df, measure, gender)
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
