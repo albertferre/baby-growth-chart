@@ -3,6 +3,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import scipy.stats as stats
+from datetime import datetime, timedelta
 
 def standard_normal_distribution(value, M, S, L, is_cumulative=True):
     # Convert value, mean, and standard deviation to z-score
@@ -32,6 +33,12 @@ MEASURES_UNITS = {
     "Weight": "kg.",
     "Height": "cm.",
     "Head Circumference": "cm."
+}
+
+MEASURES_PROMT_MSG = {
+    "Weight": "enter weight kg. value",
+    "Height": "enter height cm. value",
+    "Head Circumference": "enter head circumference cm. value"
 }
 
 # Function to load data
@@ -93,12 +100,7 @@ def sidebar_menu(option):
     return options_dict
 
 
-def evolution_page():
-        # Show the dropdown menu for selecting the metric
-        measure = st.sidebar.selectbox("Select Metric", ["Weight", "Height", "Head Circumference"])
-
-        # Add a sidebar with options "Boys" and "Girls"
-        gender = st.sidebar.radio("Select Gender", ("Boys", "Girls"))
+def evolution_page(df, measure, gender):
 
         # Handle file uploads
         df_baby = handle_file_upload()
@@ -106,8 +108,7 @@ def evolution_page():
         # Display welcome message based on gender
         display_welcome_message(gender)
 
-        # Load the data
-        df = load_data(gender=gender, measure=measure)
+
 
 
 
@@ -133,16 +134,55 @@ def evolution_page():
             # Show the plot using st.plotly_chart()
             st.plotly_chart(fig)
 
+def calculator_page(df, measure, gender):
+    # Add a date input widget
+    selected_date = st.date_input("Select born date")
+    # Calculate the difference between the selected date and today
+
+    # Add a numeric input widget
+    numeric_value = st.number_input(MEASURES_PROMT_MSG[measure])
+
+    if selected_date is not None:
+        today = datetime.today().date()
+        days_difference = (today - selected_date).days
+
+        # Calculate the difference in months and days
+        difference_in_months = days_difference / 30.5
+
+        # Display the selected date and difference in months and days
+        difference_in_months = "{:.1f}".format(difference_in_months)
+        st.write("Difference in months:", difference_in_months)
+
+        # Display the selected date and days difference
+        st.write("Days from selected date to today:", days_difference)
+
+    percentile = get_percentile(numeric_value, df, days_difference)
+    # Display the entered numeric value
+    formatted_value = "{:.1f}%".format(percentile)
+    st.write("Entered numeric value:", formatted_value)
+
 
 def main():
     st.title("Hello, World!")
 
     # Add a sidebar with options
-    option = st.sidebar.radio("Select option", ("Individual", "Time series"))
-    if option=="Time series":
-        evolution_page()
+    option = st.sidebar.radio("Select option", ("Calculator", "Evolution"))
+
+    # Show the dropdown menu for selecting the metric
+    measure = st.sidebar.selectbox("Select Metric", ["Weight", "Height", "Head Circumference"])
+
+
+
+    # Add a sidebar with options "Boys" and "Girls"
+    gender = st.sidebar.radio("Select Gender", ("Boys", "Girls"))
+
+    # Load the data
+    df = load_data(gender=gender, measure=measure)
+
+    if option=="Evolution":
+        evolution_page(df, measure, gender)
     else:
-        pass
+        calculator_page(df, measure, gender)
 
 
 
