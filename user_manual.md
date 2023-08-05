@@ -35,12 +35,21 @@ The Streamlit app provides two main features:
 
 2. **Select Metric:** Choose the metric (weight, height, or head circumference) using the dropdown menu on the left sidebar.
 
-3. **Upload Data (Optional):** If you have data to compare against the growth percentiles, you can upload an Excel file using the "Upload an Excel file" option in the left sidebar. The app will visualize your data as a red line along with the growth percentiles.
+3. **Upload Data (Optional):**\* If you have data to compare against the growth percentiles, you can upload an Excel file using the "Upload an Excel file" option in the left sidebar. The app will visualize your data as a red line along with the growth percentiles.
 
 4. **View Plot:** The app will display a Plotly line plot showing the time evolution of growth percentiles for the chosen metric and gender. The percentiles (P01, P25, P50, P75, and P99) will be displayed using discontinued lines, making it easier to differentiate them.
 
 5. **View Bar Plot (Optional):** If you uploaded data, the app will display a bar plot based on the uploaded data, representing the percentiles at each day.
 
+### Uploading Data\*
+
+You have the option to upload your own data in Excel format. The uploaded file must have the following columns:
+- `day`: The number of days since the baby's birth.
+- `h`: The baby's height (in centimeters).
+- `w`: The baby's weight (in kilograms).
+- `hc`: The baby's head circumference (in centimeters).
+
+Make sure that the data in the uploaded file adheres to this structure. If the file is missing any of these columns, the app will display an error message, and the data won't be loaded. After uploading the data, the app will show a preview of the data table.
 ## Conclusion
 
 With the Streamlit app, you can easily visualize the growth percentiles for different metrics and genders, as well as calculate the estimated percentile for a specific numeric value based on a baby's birth date. Additionally, you can compare your own data against the growth percentiles to gain valuable insights into the baby's growth and development.

@@ -81,16 +81,24 @@ def create_plot(df, measure, gender, df_baby=None):
     return fig
 
 
-# Function to handle file uploads
 def handle_file_upload():
     uploaded_file = st.sidebar.file_uploader(
         "Upload an Excel file", type=["xls", "xlsx"]
     )
     if uploaded_file is not None:
         df = pd.read_excel(uploaded_file)
-        df["w"] = df["w"].interpolate()
-        df["h"] = df["h"].interpolate()
-        df["hc"] = df["hc"].interpolate()
+
+        # Check if all required columns are present
+        required_columns = ["day", "h", "w", "hc"]
+        missing_columns = set(required_columns) - set(df.columns)
+
+        if missing_columns:
+            st.error(f"The uploaded file is missing the following columns: {', '.join(missing_columns)}. See user manual for more information")
+            return None
+
+        df["w"] = df["w"].interpolate(method="linear")
+        df["h"] = df["h"].interpolate(method="linear")
+        df["hc"] = df["hc"].interpolate(method="linear")
         return df
 
 
