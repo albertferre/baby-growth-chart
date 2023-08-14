@@ -127,8 +127,6 @@ def evolution_page(df, measure, gender):
         measure (str): The measure to be analyzed.
         gender (str): The gender for which the analysis is performed.
 
-    Returns:
-        None
     """
 
     st.title("Values Evolution")
