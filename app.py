@@ -119,6 +119,17 @@ def sidebar_menu(option):
 
 
 def evolution_page(df, measure, gender):
+    """
+    Display the evolution of a specific measure for different genders and compare it with baby data.
+
+    Parameters:
+        df (pandas.DataFrame): The main dataset containing the data for analysis.
+        measure (str): The measure to be analyzed.
+        gender (str): The gender for which the analysis is performed.
+
+    Returns:
+        None
+    """
 
     st.title("Values Evolution")
     # Handle file uploads
