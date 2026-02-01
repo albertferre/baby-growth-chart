@@ -1,56 +1,90 @@
-# Growth Percentiles Visualization App
+# Baby Growth Chart
 
-This is a Streamlit app that allows users to visualize growth percentiles based on gender, metric (weight, height, or head circumference), and time evolution. The app provides two main features: **Time Series Visualization** and **Percentile Calculator**.
+Visualize and calculate WHO growth percentiles (weight, height, head circumference) for children aged 0–5 years. Available as a **Streamlit app** and a **React web app**.
 
 ## Features
 
-### Time Series Visualization
+- **Percentile Calculator** — enter birth date and a measurement to get the exact growth percentile using the LMS method.
+- **Time Series Evolution** — interactive Plotly charts with P01, P25, P50, P75 and P99 curves. Upload your own Excel data to overlay and track your baby's growth.
+- **User Manual** — in-app documentation explaining how to use each feature.
 
-- Visualize the time evolution of growth percentiles for a specific metric (weight, height, or head circumference) and gender (boys or girls).
-- Upload your own data to compare against the growth percentiles.
-- Display the growth percentiles (P01, P25, P50, P75, and P99) using discontinued lines to easily differentiate them.
-- Optional bar plot visualization for uploaded data, showing percentiles at each day.
+## Quick start
 
-### Percentile Calculator
+### Prerequisites
 
-- Calculate the percentile of a specific numeric value (e.g., weight, height, or head circumference) for a baby born on a specific date.
-- Estimate the baby's age in months and days since the birth date to calculate the percentile based on growth percentiles.
-- Display the estimated percentile for the entered numeric value based on the growth percentiles.
+- Python 3.11+ and [uv](https://docs.astral.sh/uv/) (for the Streamlit app)
+- Node.js 18+ (for the web app)
 
-## Getting Started
+### Streamlit app
 
-1. Clone the repository to your local machine.
+```bash
+make sync        # install Python dependencies
+make run         # start the Streamlit app
+```
 
-2. Install the required dependencies by running the following command:
-   ```
-   pip install -r requirements.txt
-   ```
+### React web app
 
-3. Run the Streamlit app using the following command:
-   ```
-   streamlit run app.py
-   ```
+```bash
+make web-install # install npm dependencies
+make web-data    # convert WHO Excel files to JSON
+make web-dev     # start the Vite dev server (localhost:5173)
+```
 
-4. Access the app in your web browser by entering the URL displayed in the terminal.
+For a production build:
 
-Certainly! Below is the updated section of the README file specifying that the Excel files used in the app are from the World Health Organization:
+```bash
+make web-build   # outputs to web/dist/
+```
 
-## Data Sources
+## Project structure
 
-The growth percentiles data used in this app is sourced from the World Health Organization (WHO) and is based on standard growth charts. The data is loaded from Excel files in the `data` folder, which are named based on the metric and gender (e.g., `wfa-boys-percentiles-expanded-tables.xlsx`, `lhfa-girls-percentiles-expanded-tables.xlsx`, etc.).
+```
+├── app.py                  # Streamlit application
+├── data/                   # WHO growth percentile Excel files
+├── user_manual.md          # User documentation
+├── web/                    # React + Vite frontend
+│   ├── scripts/            #   Excel → JSON converter
+│   ├── public/data/        #   Generated JSON (gitignored)
+│   ├── src/
+│   │   ├── pages/          #   Calculator, Evolution, UserManual
+│   │   └── utils/          #   LMS percentile math, data loading
+│   └── package.json
+├── Makefile
+└── pyproject.toml
+```
 
-## Dependencies
+## Available `make` targets
 
-- Streamlit
-- Plotly
-- Pandas
-- SciPy
-- datetime
+| Target | Description |
+|---|---|
+| `make run` | Start the Streamlit app |
+| `make sync` | Install/update Python dependencies |
+| `make lint` | Run ruff linter |
+| `make format` | Auto-format Python code |
+| `make check` | Run all checks (lint + format) |
+| `make clean` | Remove cache and temporary files |
+| `make web-install` | Install web app npm dependencies |
+| `make web-data` | Convert Excel data to JSON for the web app |
+| `make web-dev` | Start web app dev server |
+| `make web-build` | Build web app for production |
+
+## Data sources
+
+Growth percentile data is sourced from the [World Health Organization (WHO)](https://www.who.int/tools/child-growth-standards/standards) standard growth charts. The six Excel files in `data/` cover weight-for-age, length/height-for-age, and head-circumference-for-age for boys and girls (0–1856 days).
+
+## Tech stack
+
+| | Streamlit app | Web app |
+|---|---|---|
+| **Framework** | Streamlit | React 19 + Vite |
+| **Charts** | Plotly | react-plotly.js |
+| **Percentile math** | scipy (norm.cdf) | Custom normal CDF (Abramowitz & Stegun) |
+| **Data loading** | pandas + openpyxl | Pre-converted JSON via fetch |
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT](LICENSE)
 
 ## Demo
 
-Check out the live demo of the Baby Growth Chart Visualization App here: [https://baby-growth-chart.streamlit.app/](https://baby-growth-chart.streamlit.app/)
+Streamlit version: [baby-growth-chart.streamlit.app](https://baby-growth-chart.streamlit.app/)
