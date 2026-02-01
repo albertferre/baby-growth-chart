@@ -3,7 +3,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import scipy.stats as stats
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def standard_normal_distribution(value, M, S, L, is_cumulative=True):
@@ -20,6 +20,8 @@ def standard_normal_distribution(value, M, S, L, is_cumulative=True):
 
 
 def get_percentile(value, df, day):
+    if day < 0 or day >= len(df):
+        return None
     L = df.iloc[day]["L"]
     M = df.iloc[day]["M"]
     S = df.iloc[day]["S"]
@@ -44,7 +46,8 @@ def load_data(gender, measure):
     df = pd.read_excel(
         f"data/{measure_code}-{gender.lower()}-percentiles-expanded-tables.xlsx"
     )
-    df.rename(columns={"Age": "Day"}, inplace=True)
+    if "Age" in df.columns:
+        df.rename(columns={"Age": "Day"}, inplace=True)
     return df
 
 
@@ -102,22 +105,6 @@ def handle_file_upload():
         return df
 
 
-def sidebar_menu(option):
-    options_dict = dict()
-    if option == "Time series":
-        # Show the dropdown menu for selecting the metric
-        options_dict["measure"] = st.sidebar.selectbox(
-            "Select Metric", ["Weight", "Height", "Head Circumference"]
-        )
-
-        # Add a sidebar with options "Boys" and "Girls"
-        options_dict["gender"] = st.sidebar.radio("Select Gender", ("Boys", "Girls"))
-    else:
-        pass
-
-    return options_dict
-
-
 def evolution_page(df, measure, gender):
     """
     Display the evolution of a specific measure for different genders and compare it with baby data.
@@ -169,13 +156,17 @@ def calculator_page(df, measure, gender):
 
     # Add a date input widget
     selected_date = st.date_input("Select born date")
-    # Calculate the difference between the selected date and today
 
     # Add a numeric input widget
     numeric_value = st.number_input(MEASURES_PROMT_MSG[measure])
 
     if selected_date is not None:
         today = datetime.today().date()
+
+        if selected_date > today:
+            st.warning("The birth date cannot be in the future.")
+            return
+
         days_difference = (today - selected_date).days
 
         # Calculate the difference in months and days
@@ -188,10 +179,18 @@ def calculator_page(df, measure, gender):
         # Display the selected date and days difference
         st.write("Days from selected date to today:", days_difference)
 
-    percentile = get_percentile(numeric_value, df, days_difference)
-    # Display the entered numeric value
-    formatted_value = "{:.1f}%".format(percentile)
-    st.write("Entered numeric value:", formatted_value)
+        if numeric_value <= 0:
+            st.warning("Please enter a positive value for the measurement.")
+            return
+
+        percentile = get_percentile(numeric_value, df, days_difference)
+
+        if percentile is None:
+            st.warning("The age exceeds the supported range (0–5 years). Cannot calculate percentile.")
+            return
+
+        formatted_value = "{:.1f}%".format(percentile)
+        st.write("Percentile:", formatted_value)
 
 
 def user_manual():
