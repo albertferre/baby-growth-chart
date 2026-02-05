@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import Plot from "react-plotly.js";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS, MEASURES_INPUT } from "../utils/data";
+import { useLanguage } from "../i18n/LanguageContext";
 
 function linearInterpolate(arr) {
   const result = [...arr];
@@ -102,6 +103,7 @@ const PLOTLY_LAYOUT_BASE = {
 };
 
 export default function Evolution({ data, measure, gender }) {
+  const { t } = useLanguage();
   const [babyData, setBabyData] = useState(null);
   const [fileName, setFileName] = useState("");
   const [uploadError, setUploadError] = useState("");
@@ -110,6 +112,17 @@ export default function Evolution({ data, measure, gender }) {
   const col = MEASURES_INPUT[measure];
   const unit = MEASURES_UNITS[measure];
   const accentColor = gender === "Girls" ? "#ec4899" : "#3b82f6";
+
+  // Translate measure and gender
+  const getMeasureLabel = () => {
+    if (measure === "Weight") return t("measureWeight");
+    if (measure === "Height") return t("measureHeight");
+    return t("measureHeadCircumference");
+  };
+
+  const getGenderLabel = () => {
+    return gender === "Boys" ? t("genderBoys").toLowerCase() : t("genderGirls").toLowerCase();
+  };
 
   async function handleFileUpload(e) {
     const file = e.target.files[0];
@@ -123,9 +136,7 @@ export default function Evolution({ data, measure, gender }) {
         (c) => !Object.keys(rows[0] || {}).includes(c)
       );
       if (missing.length) {
-        setUploadError(
-          `Missing columns: ${missing.join(", ")}. Click "How to prepare your file" for details.`
-        );
+        setUploadError(t("evoErrorMissing", { cols: missing.join(", ") }));
         setBabyData(null);
         setFileName("");
         return;
@@ -138,7 +149,7 @@ export default function Evolution({ data, measure, gender }) {
       );
       setFileName(file.name);
     } catch {
-      setUploadError("Failed to parse file. Make sure it's a valid Excel file (.xlsx).");
+      setUploadError(t("evoErrorParse"));
       setBabyData(null);
       setFileName("");
     }
@@ -194,7 +205,7 @@ export default function Evolution({ data, measure, gender }) {
     traces.push({
       x: babyData.map((r) => r.day),
       y: babyData.map((r) => r.value),
-      name: "Baby",
+      name: t("evoBaby"),
       type: "scatter",
       mode: "lines+markers",
       line: { color: accentColor, width: 2.5 },
@@ -207,8 +218,8 @@ export default function Evolution({ data, measure, gender }) {
     <div className="page">
       <div className="evolution-header">
         <div className="page-header" style={{ marginBottom: 0 }}>
-          <h1>{measure} Evolution</h1>
-          <p>WHO percentile curves for {gender.toLowerCase()}</p>
+          <h1>{t("evoTitle", { measure: getMeasureLabel() })}</h1>
+          <p>{t("evoSubtitle", { gender: getGenderLabel() })}</p>
         </div>
 
         <div className="upload-section">
@@ -220,7 +231,7 @@ export default function Evolution({ data, measure, gender }) {
                 fileName
               ) : (
                 <>
-                  <strong>Upload</strong> baby data (.xlsx)
+                  <strong>{t("evoUpload")}</strong> {t("evoUploadHint")}
                 </>
               )}
             </span>
@@ -239,47 +250,47 @@ export default function Evolution({ data, measure, gender }) {
         aria-expanded={showHelp}
       >
         <InfoIcon />
-        <span>{showHelp ? "Hide instructions" : "How to prepare your file"}</span>
+        <span>{showHelp ? t("evoHelpHide") : t("evoHelpToggle")}</span>
       </button>
 
       {showHelp && (
         <div className="help-panel">
-          <h3>Excel file format</h3>
-          <p>Your Excel file must have these <strong>4 columns</strong> in the first row (headers):</p>
+          <h3>{t("evoHelpTitle")}</h3>
+          <p dangerouslySetInnerHTML={{ __html: t("evoHelpIntro") }} />
 
           <table className="help-table">
             <thead>
               <tr>
-                <th>Column</th>
-                <th>Description</th>
-                <th>Example</th>
+                <th>{t("evoHelpColColumn")}</th>
+                <th>{t("evoHelpColDesc")}</th>
+                <th>{t("evoHelpColExample")}</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td><code>day</code></td>
-                <td>Age in days (from birth)</td>
+                <td>{t("evoHelpDayDesc")}</td>
                 <td>0, 30, 60, 90...</td>
               </tr>
               <tr>
                 <td><code>w</code></td>
-                <td>Weight in kg</td>
+                <td>{t("evoHelpWeightDesc")}</td>
                 <td>3.2, 4.5, 5.8...</td>
               </tr>
               <tr>
                 <td><code>h</code></td>
-                <td>Height in cm</td>
+                <td>{t("evoHelpHeightDesc")}</td>
                 <td>50, 54, 58...</td>
               </tr>
               <tr>
                 <td><code>hc</code></td>
-                <td>Head circumference in cm</td>
+                <td>{t("evoHelpHcDesc")}</td>
                 <td>35, 37, 39...</td>
               </tr>
             </tbody>
           </table>
 
-          <h4>Example:</h4>
+          <h4>{t("evoHelpExample")}</h4>
           <div className="help-example">
             <table>
               <thead>
@@ -295,12 +306,12 @@ export default function Evolution({ data, measure, gender }) {
           </div>
 
           <div className="help-tips">
-            <h4>Tips:</h4>
+            <h4>{t("evoHelpTips")}</h4>
             <ul>
-              <li>Column names must be <strong>exactly</strong> as shown (lowercase)</li>
-              <li>You can leave cells empty if you don&apos;t have that measurement</li>
-              <li>Use decimal point (.) not comma (,) for decimals</li>
-              <li>Data must be in the <strong>first sheet</strong> of the Excel file</li>
+              <li dangerouslySetInnerHTML={{ __html: t("evoHelpTip1") }} />
+              <li>{t("evoHelpTip2")}</li>
+              <li>{t("evoHelpTip3")}</li>
+              <li dangerouslySetInnerHTML={{ __html: t("evoHelpTip4") }} />
             </ul>
           </div>
         </div>
@@ -319,7 +330,7 @@ export default function Evolution({ data, measure, gender }) {
           layout={{
             ...PLOTLY_LAYOUT_BASE,
             title: {
-              text: `${measure} Percentiles — ${gender}`,
+              text: t("evoChartTitle", { measure: getMeasureLabel(), gender: gender === "Boys" ? t("genderBoys") : t("genderGirls") }),
               font: { size: 15, color: "#1e293b", family: "Inter, sans-serif" },
             },
             yaxis: {
@@ -353,12 +364,12 @@ export default function Evolution({ data, measure, gender }) {
             layout={{
               ...PLOTLY_LAYOUT_BASE,
               title: {
-                text: "Percentile over time",
+                text: t("evoChartPercentile"),
                 font: { size: 15, color: "#1e293b", family: "Inter, sans-serif" },
               },
               yaxis: {
                 ...PLOTLY_LAYOUT_BASE.yaxis,
-                title: { text: `${measure} percentile`, font: { size: 12, color: "#64748b" } },
+                title: { text: `${getMeasureLabel()} percentile`, font: { size: 12, color: "#64748b" } },
                 range: [0, 105],
               },
               showlegend: false,

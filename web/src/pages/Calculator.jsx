@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS } from "../utils/data";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const STORAGE_KEY_BIRTHDATE = "baby-growth-birthdate";
 
@@ -34,6 +35,7 @@ function WarningIcon() {
 }
 
 export default function Calculator({ data, measure, gender }) {
+  const { t } = useLanguage();
   const [ageInputMode, setAgeInputMode] = useState("birthdate"); // "birthdate" | "days" | "months"
   const [birthDate, setBirthDate] = useState(getSavedBirthDate);
   const [ageInDays, setAgeInDays] = useState("");
@@ -52,6 +54,13 @@ export default function Calculator({ data, measure, gender }) {
       }
     }
   }, [birthDate]);
+
+  // Translate measure name
+  const getMeasureLabel = () => {
+    if (measure === "Weight") return t("measureWeight");
+    if (measure === "Height") return t("measureHeight");
+    return t("measureHeadCircumference");
+  };
 
   function calculateDaysFromInput() {
     if (ageInputMode === "birthdate") {
@@ -80,30 +89,28 @@ export default function Calculator({ data, measure, gender }) {
 
     if (days === null) {
       if (ageInputMode === "birthdate") {
-        setWarning("Please select a birth date.");
+        setWarning(t("calcWarnSelectDate"));
       } else if (ageInputMode === "days") {
-        setWarning("Please enter the age in days.");
+        setWarning(t("calcWarnEnterDays"));
       } else {
-        setWarning("Please enter the age in months.");
+        setWarning(t("calcWarnEnterMonths"));
       }
       return;
     }
 
     if (days < 0) {
-      setWarning("The birth date cannot be in the future.");
+      setWarning(t("calcWarnFutureDate"));
       return;
     }
 
     const numValue = parseFloat(value);
     if (!value || numValue <= 0) {
-      setWarning("Please enter a positive value for the measurement.");
+      setWarning(t("calcWarnPositiveValue"));
       return;
     }
 
     if (days >= data.length) {
-      setWarning(
-        "The age exceeds the supported range (0–5 years). Cannot calculate percentile."
-      );
+      setWarning(t("calcWarnAgeExceeds"));
       return;
     }
 
@@ -121,36 +128,36 @@ export default function Calculator({ data, measure, gender }) {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Percentile Calculator</h1>
-        <p>Enter age and measurement to calculate the growth percentile</p>
+        <h1>{t("calcTitle")}</h1>
+        <p>{t("calcSubtitle")}</p>
       </div>
 
       <div className="calculator-layout">
         <div className="card">
           <form onSubmit={handleCalculate} className="calculator-form">
             <div className="form-group">
-              <label className="form-label">Age input method</label>
+              <label className="form-label">{t("calcAgeMethod")}</label>
               <div className="age-mode-toggle">
                 <button
                   type="button"
                   className={ageInputMode === "birthdate" ? "active" : ""}
                   onClick={() => setAgeInputMode("birthdate")}
                 >
-                  Birth date
+                  {t("calcBirthDate")}
                 </button>
                 <button
                   type="button"
                   className={ageInputMode === "days" ? "active" : ""}
                   onClick={() => setAgeInputMode("days")}
                 >
-                  Days
+                  {t("calcDays")}
                 </button>
                 <button
                   type="button"
                   className={ageInputMode === "months" ? "active" : ""}
                   onClick={() => setAgeInputMode("months")}
                 >
-                  Months
+                  {t("calcMonths")}
                 </button>
               </div>
             </div>
@@ -158,8 +165,8 @@ export default function Calculator({ data, measure, gender }) {
             {ageInputMode === "birthdate" && (
               <div className="form-group">
                 <label className="form-label" htmlFor="birthdate">
-                  Birth date
-                  <span className="form-hint">(saved automatically)</span>
+                  {t("calcBirthDate")}
+                  <span className="form-hint">{t("calcSavedAuto")}</span>
                 </label>
                 <input
                   id="birthdate"
@@ -173,7 +180,7 @@ export default function Calculator({ data, measure, gender }) {
 
             {ageInputMode === "days" && (
               <div className="form-group">
-                <label className="form-label" htmlFor="age-days">Age (days)</label>
+                <label className="form-label" htmlFor="age-days">{t("calcAgeDays")}</label>
                 <input
                   id="age-days"
                   className="form-input"
@@ -182,14 +189,14 @@ export default function Calculator({ data, measure, gender }) {
                   max="1826"
                   value={ageInDays}
                   onChange={(e) => setAgeInDays(e.target.value)}
-                  placeholder="e.g. 180"
+                  placeholder={t("calcPlaceholderDays")}
                 />
               </div>
             )}
 
             {ageInputMode === "months" && (
               <div className="form-group">
-                <label className="form-label" htmlFor="age-months">Age (months)</label>
+                <label className="form-label" htmlFor="age-months">{t("calcAgeMonths")}</label>
                 <input
                   id="age-months"
                   className="form-input"
@@ -199,14 +206,14 @@ export default function Calculator({ data, measure, gender }) {
                   max="60"
                   value={ageInMonths}
                   onChange={(e) => setAgeInMonths(e.target.value)}
-                  placeholder="e.g. 6.5"
+                  placeholder={t("calcPlaceholderMonths")}
                 />
               </div>
             )}
 
             <div className="form-group">
               <label className="form-label" htmlFor="measurement">
-                {measure} ({unit})
+                {getMeasureLabel()} ({unit})
               </label>
               <input
                 id="measurement"
@@ -216,12 +223,12 @@ export default function Calculator({ data, measure, gender }) {
                 min="0"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder={`e.g. ${measure === "Weight" ? "7.5" : measure === "Height" ? "68" : "43"}`}
+                placeholder={`${measure === "Weight" ? "7.5" : measure === "Height" ? "68" : "43"}`}
               />
             </div>
 
             <button type="submit" className="btn-primary">
-              Calculate
+              {t("calcCalculate")}
             </button>
           </form>
 
@@ -240,7 +247,7 @@ export default function Calculator({ data, measure, gender }) {
                 <span className="percentile-number" style={{ color: pColor }}>
                   {result.percentile}%
                 </span>
-                <span className="percentile-label">percentile</span>
+                <span className="percentile-label">{t("calcResultPercentile")}</span>
 
                 <div className="percentile-bar">
                   <div
@@ -266,18 +273,18 @@ export default function Calculator({ data, measure, gender }) {
 
               <div style={{ display: "flex", gap: "1.5rem" }}>
                 <div className="result-stat">
-                  <span className="result-stat-label">Age</span>
-                  <span className="result-stat-value">{result.months} months</span>
+                  <span className="result-stat-label">{t("calcResultAge")}</span>
+                  <span className="result-stat-value">{result.months} {t("calcResultMonths")}</span>
                 </div>
                 <div className="result-stat">
-                  <span className="result-stat-label">Days</span>
+                  <span className="result-stat-label">{t("calcResultDays")}</span>
                   <span className="result-stat-value">{result.days}</span>
                 </div>
               </div>
             </>
           ) : (
             <div className="result-empty">
-              Enter data and press Calculate
+              {t("calcResultEmpty")}
             </div>
           )}
         </div>

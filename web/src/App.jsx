@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import { loadData } from "./utils/data";
+import { LanguageProvider, useLanguage } from "./i18n/LanguageContext";
+import { LANGUAGES } from "./i18n/translations";
 import Calculator from "./pages/Calculator";
 import Evolution from "./pages/Evolution";
 import UserManual from "./pages/UserManual";
@@ -51,7 +53,8 @@ function MedicalIcon() {
   );
 }
 
-export default function App() {
+function AppContent() {
+  const { t, language, setLanguage } = useLanguage();
   const [measure, setMeasure] = useState("Weight");
   const [gender, setGender] = useState("Boys");
   const [data, setData] = useState(null);
@@ -66,108 +69,132 @@ export default function App() {
     };
   }, [gender, measure]);
 
+  // Translate measure and gender for display
+  const getMeasureLabel = (m) => {
+    if (m === "Weight") return t("measureWeight");
+    if (m === "Height") return t("measureHeight");
+    return t("measureHeadCircumference");
+  };
+
+  const getGenderLabel = (g) => {
+    return g === "Boys" ? t("genderBoys") : t("genderGirls");
+  };
+
   return (
-    <BrowserRouter>
-      <div className="layout">
-        <aside className="sidebar">
-          <div className="sidebar-brand">
-            <div className="sidebar-brand-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 3v18h18" />
-                <path d="M7 16l4-8 4 4 4-6" />
-              </svg>
-            </div>
-            <h2>Baby Growth Chart</h2>
+    <div className="layout">
+      <aside className="sidebar">
+        <div className="sidebar-brand">
+          <div className="sidebar-brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3v18h18" />
+              <path d="M7 16l4-8 4 4 4-6" />
+            </svg>
           </div>
+          <h2>{t("appTitle")}</h2>
+        </div>
 
-          <nav>
-            <NavLink to="/">
-              <span className="nav-icon"><CalculatorIcon /></span>
-              Calculator
-            </NavLink>
-            <NavLink to="/evolution">
-              <span className="nav-icon"><ChartIcon /></span>
-              Evolution
-            </NavLink>
-            <NavLink to="/manual">
-              <span className="nav-icon"><BookIcon /></span>
-              User Manual
-            </NavLink>
-          </nav>
+        <nav>
+          <NavLink to="/">
+            <span className="nav-icon"><CalculatorIcon /></span>
+            {t("navCalculator")}
+          </NavLink>
+          <NavLink to="/evolution">
+            <span className="nav-icon"><ChartIcon /></span>
+            {t("navEvolution")}
+          </NavLink>
+          <NavLink to="/manual">
+            <span className="nav-icon"><BookIcon /></span>
+            {t("navManual")}
+          </NavLink>
+        </nav>
 
-          <div className="sidebar-section">
-            <span className="sidebar-section-label">Metric</span>
-            <select value={measure} onChange={(e) => setMeasure(e.target.value)}>
-              {MEASURES.map((m) => (
-                <option key={m}>{m}</option>
-              ))}
-            </select>
+        <div className="sidebar-section">
+          <span className="sidebar-section-label">{t("labelMetric")}</span>
+          <select value={measure} onChange={(e) => setMeasure(e.target.value)}>
+            {MEASURES.map((m) => (
+              <option key={m} value={m}>{getMeasureLabel(m)}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sidebar-section">
+          <span className="sidebar-section-label">{t("labelGender")}</span>
+          <div className="gender-toggle">
+            {GENDERS.map((g) => (
+              <button
+                key={g}
+                className={gender === g ? `active-${g.toLowerCase()}` : ""}
+                onClick={() => setGender(g)}
+              >
+                {getGenderLabel(g)}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div className="sidebar-section">
-            <span className="sidebar-section-label">Gender</span>
-            <div className="gender-toggle">
-              {GENDERS.map((g) => (
-                <button
-                  key={g}
-                  className={gender === g ? `active-${g.toLowerCase()}` : ""}
-                  onClick={() => setGender(g)}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
+        <div className="sidebar-section">
+          <span className="sidebar-section-label">{t("labelLanguage")}</span>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+            {LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>{lang.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="medical-disclaimer">
+          <div className="medical-disclaimer-icon">
+            <MedicalIcon />
           </div>
-
-          <div className="medical-disclaimer">
-            <div className="medical-disclaimer-icon">
-              <MedicalIcon />
-            </div>
-            <div className="medical-disclaimer-content">
-              <strong>Medical disclaimer</strong>
-              <p>
-                This tool is for informational purposes only.
-                For any health concerns about your baby&apos;s growth,
-                please consult a pediatrician or healthcare professional.
-              </p>
-            </div>
+          <div className="medical-disclaimer-content">
+            <strong>{t("medicalDisclaimerTitle")}</strong>
+            <p>{t("medicalDisclaimerText")}</p>
           </div>
+        </div>
 
-          <div className="data-source">
-            Data source:{" "}
-            <a
-              href="https://www.who.int/tools/child-growth-standards/standards"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              WHO Child Growth Standards
-            </a>
+        <div className="data-source">
+          {t("dataSource")}{" "}
+          <a
+            href="https://www.who.int/tools/child-growth-standards/standards"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("dataSourceLink")}
+          </a>
+        </div>
+      </aside>
+
+      <main className="content">
+        {data ? (
+          <Routes>
+            <Route
+              path="/"
+              element={<Calculator data={data} measure={measure} gender={gender} />}
+            />
+            <Route
+              path="/evolution"
+              element={
+                <Evolution data={data} measure={measure} gender={gender} />
+              }
+            />
+            <Route path="/manual" element={<UserManual />} />
+          </Routes>
+        ) : (
+          <div className="loading">
+            <div className="loading-spinner" />
+            {t("loading")}
           </div>
-        </aside>
+        )}
+      </main>
+    </div>
+  );
+}
 
-        <main className="content">
-          {data ? (
-            <Routes>
-              <Route
-                path="/"
-                element={<Calculator data={data} measure={measure} gender={gender} />}
-              />
-              <Route
-                path="/evolution"
-                element={
-                  <Evolution data={data} measure={measure} gender={gender} />
-                }
-              />
-              <Route path="/manual" element={<UserManual />} />
-            </Routes>
-          ) : (
-            <div className="loading">
-              <div className="loading-spinner" />
-              Loading data...
-            </div>
-          )}
-        </main>
-      </div>
-    </BrowserRouter>
+export default function App() {
+  return (
+    <LanguageProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function UserManual() {
+  const { t } = useLanguage();
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +15,7 @@ export default function UserManual() {
         setLoading(false);
       })
       .catch(() => {
-        setContent("Failed to load user manual.");
+        setContent("");
         setLoading(false);
       });
   }, []);
@@ -22,7 +24,20 @@ export default function UserManual() {
     return (
       <div className="loading">
         <div className="loading-spinner" />
-        Loading manual...
+        {t("manualLoading")}
+      </div>
+    );
+  }
+
+  if (!content) {
+    return (
+      <div className="page">
+        <div className="page-header">
+          <h1>{t("manualTitle")}</h1>
+        </div>
+        <div className="warning">
+          {t("manualError")}
+        </div>
       </div>
     );
   }
