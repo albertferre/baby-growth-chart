@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "data": "node scripts/convert-data.js",
+    "prebuild": "node scripts/convert-data.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
