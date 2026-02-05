@@ -23,6 +23,9 @@ export const translations = {
     skipToContent: "Skip to main content",
     sidebarLabel: "Sidebar navigation and settings",
     languageSwitcherLabel: "Language selection",
+    switchToDark: "Switch to dark mode",
+    switchToLight: "Switch to light mode",
+    exportResult: "Export",
 
     // Calculator
     calcTitle: "Percentile Calculator",
@@ -141,6 +144,9 @@ export const translations = {
     skipToContent: "Saltar al contenido principal",
     sidebarLabel: "Navegación y ajustes de la barra lateral",
     languageSwitcherLabel: "Selección de idioma",
+    switchToDark: "Cambiar a modo oscuro",
+    switchToLight: "Cambiar a modo claro",
+    exportResult: "Exportar",
 
     // Calculator
     calcTitle: "Calculadora de Percentiles",

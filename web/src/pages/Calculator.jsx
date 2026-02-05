@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS } from "../utils/data";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -43,6 +43,16 @@ function EmptyStateIcon() {
   );
 }
 
+function DownloadIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+
 export default function Calculator({ data, measure, gender }) {
   const { t } = useLanguage();
   const [ageInputMode, setAgeInputMode] = useState("birthdate"); // "birthdate" | "days" | "months"
@@ -52,6 +62,67 @@ export default function Calculator({ data, measure, gender }) {
   const [value, setValue] = useState("");
   const [result, setResult] = useState(null);
   const [warning, setWarning] = useState("");
+  const resultRef = useRef(null);
+
+  // Export result as PNG image
+  const exportResult = async () => {
+    if (!result || !resultRef.current) return;
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const scale = 2; // For better quality
+
+    canvas.width = 400 * scale;
+    canvas.height = 280 * scale;
+    ctx.scale(scale, scale);
+
+    // Background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, 400, 280);
+
+    // Header
+    ctx.fillStyle = "#6366f1";
+    ctx.fillRect(0, 0, 400, 50);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 16px Inter, sans-serif";
+    ctx.fillText("Baby Growth Chart", 20, 32);
+
+    // Percentile
+    const pColor = getPercentileColor(parseFloat(result.percentile), gender);
+    ctx.fillStyle = pColor;
+    ctx.font = "bold 64px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`${result.percentile}%`, 200, 130);
+
+    ctx.fillStyle = "#64748b";
+    ctx.font = "14px Inter, sans-serif";
+    ctx.fillText(t("calcResultPercentile"), 200, 155);
+
+    // Progress bar
+    ctx.fillStyle = "#f1f5f9";
+    ctx.fillRect(40, 175, 320, 12);
+    ctx.fillStyle = pColor;
+    ctx.fillRect(40, 175, 320 * (parseFloat(result.percentile) / 100), 12);
+
+    // Stats
+    ctx.fillStyle = "#1e293b";
+    ctx.font = "12px Inter, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`${t("calcResultAge")}: ${result.months} ${t("calcResultMonths")}`, 40, 220);
+    ctx.fillText(`${t("calcResultDays")}: ${result.days}`, 40, 240);
+
+    // Footer
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "10px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("WHO Child Growth Standards • babygrowthchart.app", 200, 268);
+
+    // Download
+    const link = document.createElement("a");
+    link.download = `baby-growth-${result.percentile}pct.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
   // Save birthdate to localStorage when it changes
   useEffect(() => {
@@ -249,7 +320,15 @@ export default function Calculator({ data, measure, gender }) {
           )}
         </div>
 
-        <div className={`card result-card ${result ? "has-result" : ""}`} role="region" aria-label={t("calcResultLabel")} aria-live="polite">
+        <div ref={resultRef} className={`card result-card ${result ? "has-result" : ""}`} role="region" aria-label={t("calcResultLabel")} aria-live="polite">
+          {result && (
+            <div className="result-header">
+              <button className="btn-export" onClick={exportResult} title={t("exportResult")}>
+                <DownloadIcon />
+                <span>{t("exportResult")}</span>
+              </button>
+            </div>
+          )}
           {result ? (
             <>
               <div className="percentile-display">
