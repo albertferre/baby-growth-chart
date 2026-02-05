@@ -54,6 +54,29 @@ function MedicalIcon() {
   );
 }
 
+function RulerIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" />
+      <path d="m14.5 12.5 2-2" />
+      <path d="m11.5 9.5 2-2" />
+      <path d="m8.5 6.5 2-2" />
+      <path d="m17.5 15.5 2-2" />
+    </svg>
+  );
+}
+
+function GenderIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="8" r="5" />
+      <path d="M2 21a8 8 0 0 1 13.292-6" />
+      <circle cx="19" cy="19" r="3" />
+      <path d="m22 22-1.5-1.5" />
+    </svg>
+  );
+}
+
 function AppContent() {
   const { t, language, setLanguage } = useLanguage();
   const [measure, setMeasure] = useState("Weight");
@@ -110,27 +133,40 @@ function AppContent() {
           </NavLink>
         </nav>
 
-        <div className="sidebar-section">
-          <span className="sidebar-section-label">{t("labelMetric")}</span>
-          <select value={measure} onChange={(e) => setMeasure(e.target.value)}>
-            {MEASURES.map((m) => (
-              <option key={m} value={m}>{getMeasureLabel(m)}</option>
-            ))}
-          </select>
-        </div>
+        <div className="sidebar-settings">
+          <div className="sidebar-settings-header">
+            <span>{t("labelSettings")}</span>
+          </div>
+          <div className="sidebar-settings-content">
+            <div className="sidebar-section" data-coach="metric">
+              <span className="sidebar-section-label"><RulerIcon /> {t("labelMetric")}</span>
+              <div className="metric-toggle">
+                {MEASURES.map((m) => (
+                  <button
+                    key={m}
+                    className={measure === m ? "active" : ""}
+                    onClick={() => setMeasure(m)}
+                  >
+                    {getMeasureLabel(m)}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div className="sidebar-section">
-          <span className="sidebar-section-label">{t("labelGender")}</span>
-          <div className="gender-toggle">
-            {GENDERS.map((g) => (
-              <button
-                key={g}
-                className={gender === g ? `active-${g.toLowerCase()}` : ""}
-                onClick={() => setGender(g)}
-              >
-                {getGenderLabel(g)}
-              </button>
-            ))}
+            <div className="sidebar-section">
+              <span className="sidebar-section-label"><GenderIcon /> {t("labelGender")}</span>
+              <div className="gender-toggle">
+                {GENDERS.map((g) => (
+                  <button
+                    key={g}
+                    className={gender === g ? `active-${g.toLowerCase()}` : ""}
+                    onClick={() => setGender(g)}
+                  >
+                    {getGenderLabel(g)}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
