@@ -105,4 +105,5 @@ Growth percentile data is sourced from the [World Health Organization (WHO)](htt
 
 ## Demo
 
-Streamlit version: [baby-growth-chart.streamlit.app](https://baby-growth-chart.streamlit.app/)
+- **Web app**: [baby-growth-chart.vercel.app](https://baby-growth-chart.vercel.app/)
+- **Streamlit version**: [baby-growth-chart.streamlit.app](https://baby-growth-chart.streamlit.app/)
