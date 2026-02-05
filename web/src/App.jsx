@@ -252,7 +252,7 @@ function AppContent() {
             rel="noopener noreferrer"
           >
             <GitHubIcon />
-            <span>made by ants albertferre</span>
+            <span>Made by albertferre</span>
           </a>
         </div>
       </aside>
