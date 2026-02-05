@@ -43,6 +43,14 @@ function ChartIcon() {
   );
 }
 
+function MedicalIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [measure, setMeasure] = useState("Weight");
   const [gender, setGender] = useState("Boys");
@@ -50,7 +58,6 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    setData(null);
     loadData(gender, measure).then((d) => {
       if (!cancelled) setData(d);
     });
@@ -109,6 +116,20 @@ export default function App() {
                   {g}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="medical-disclaimer">
+            <div className="medical-disclaimer-icon">
+              <MedicalIcon />
+            </div>
+            <div className="medical-disclaimer-content">
+              <strong>Medical disclaimer</strong>
+              <p>
+                This tool is for informational purposes only.
+                For any health concerns about your baby&apos;s growth,
+                please consult a pediatrician or healthcare professional.
+              </p>
             </div>
           </div>
         </aside>
