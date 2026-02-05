@@ -6,6 +6,7 @@ import { LANGUAGES } from "./i18n/translations";
 import Calculator from "./pages/Calculator";
 import Evolution from "./pages/Evolution";
 import UserManual from "./pages/UserManual";
+import CoachMarks from "./components/CoachMarks";
 import "./App.css";
 
 const MEASURES = ["Weight", "Height", "Head Circumference"];
@@ -82,6 +83,7 @@ function AppContent() {
 
   return (
     <div className="layout">
+      <CoachMarks />
       <aside className="sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">
