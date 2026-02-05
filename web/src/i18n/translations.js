@@ -161,6 +161,6 @@ export const translations = {
 };
 
 export const LANGUAGES = [
-  { code: "en", name: "English" },
-  { code: "es", name: "Español" },
+  { code: "en", name: "English", flag: "🇬🇧" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
 ];

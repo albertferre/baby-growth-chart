@@ -274,6 +274,59 @@ body {
   padding: 2.5rem;
   overflow-y: auto;
   min-width: 0;
+  position: relative;
+}
+
+/* Language switcher */
+.language-switcher {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  gap: 0.25rem;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.language-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.language-btn:hover {
+  background: var(--c-bg);
+}
+
+.language-btn.active {
+  background: var(--c-primary-light);
+}
+
+.language-flag {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.language-code {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.language-btn.active .language-code {
+  color: var(--c-primary);
 }
 
 .page {
@@ -958,6 +1011,20 @@ body {
 
   .content {
     padding: 1.25rem;
+    padding-top: 3.5rem;
+  }
+
+  .language-switcher {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .language-code {
+    display: none;
+  }
+
+  .language-btn {
+    padding: 0.375rem 0.5rem;
   }
 
   .page-header h1 {
