@@ -114,8 +114,9 @@ function AppContent() {
 
   return (
     <div className="layout">
+      <a href="#main-content" className="skip-link">{t("skipToContent")}</a>
       <CoachMarks />
-      <aside className="sidebar">
+      <aside className="sidebar" role="complementary" aria-label={t("sidebarLabel")}>
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -211,20 +212,22 @@ function AppContent() {
         </div>
       </aside>
 
-      <main className="content">
-        <div className="language-switcher">
+      <main id="main-content" className="content" role="main">
+        <nav className="language-switcher" aria-label={t("languageSwitcherLabel")}>
           {LANGUAGES.map((lang) => (
             <button
               key={lang.code}
               className={`language-btn ${language === lang.code ? "active" : ""}`}
               onClick={() => setLanguage(lang.code)}
               title={lang.name}
+              aria-label={lang.name}
+              aria-pressed={language === lang.code}
             >
-              <span className="language-flag">{lang.flag}</span>
+              <span className="language-flag" aria-hidden="true">{lang.flag}</span>
               <span className="language-code">{lang.code.toUpperCase()}</span>
             </button>
           ))}
-        </div>
+        </nav>
         {data ? (
           <Routes>
             <Route

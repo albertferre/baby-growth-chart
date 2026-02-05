@@ -26,10 +26,19 @@ function getPercentileColor(p, gender) {
 
 function WarningIcon() {
   return (
-    <svg className="warning-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className="warning-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
       <line x1="12" y1="9" x2="12" y2="13" />
       <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
+function EmptyStateIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 3v18h18" />
+      <path d="M7 16l4-8 4 4 4-6" />
     </svg>
   );
 }
@@ -240,11 +249,11 @@ export default function Calculator({ data, measure, gender }) {
           )}
         </div>
 
-        <div className="card result-card">
+        <div className={`card result-card ${result ? "has-result" : ""}`} role="region" aria-label={t("calcResultLabel")} aria-live="polite">
           {result ? (
             <>
               <div className="percentile-display">
-                <span className="percentile-number" style={{ color: pColor }}>
+                <span className="percentile-number animated" style={{ color: pColor }}>
                   {result.percentile}%
                 </span>
                 <span className="percentile-label">{t("calcResultPercentile")}</span>
@@ -283,8 +292,12 @@ export default function Calculator({ data, measure, gender }) {
               </div>
             </>
           ) : (
-            <div className="result-empty">
-              {t("calcResultEmpty")}
+            <div className="result-empty" role="status" aria-live="polite">
+              <div className="result-empty-icon">
+                <EmptyStateIcon />
+              </div>
+              <span className="result-empty-text">{t("calcResultEmpty")}</span>
+              <span className="result-empty-hint">{t("calcResultHint")}</span>
             </div>
           )}
         </div>
