@@ -109,11 +109,30 @@ function MoonIcon() {
   );
 }
 
+function ChevronDownIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  );
+}
+
 function AppContent() {
   const { t, language, setLanguage } = useLanguage();
   const [measure, setMeasure] = useState("Weight");
   const [gender, setGender] = useState("Boys");
   const [data, setData] = useState(null);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem("baby-growth-theme") || "light";
@@ -267,21 +286,44 @@ function AppContent() {
           >
             {theme === "light" ? <MoonIcon /> : <SunIcon />}
           </button>
-          <nav className="language-switcher" aria-label={t("languageSwitcherLabel")}>
-            {LANGUAGES.map((lang) => (
-              <button
-                key={lang.code}
-                className={`language-btn ${language === lang.code ? "active" : ""}`}
-                onClick={() => setLanguage(lang.code)}
-                title={lang.name}
-                aria-label={lang.name}
-                aria-pressed={language === lang.code}
-              >
-                <span className="language-flag" aria-hidden="true">{lang.flag}</span>
-                <span className="language-code">{lang.code.toUpperCase()}</span>
-              </button>
-            ))}
-          </nav>
+          <div className="language-dropdown" aria-label={t("languageSwitcherLabel")}>
+            <button
+              className="language-dropdown-trigger"
+              onClick={() => setLangMenuOpen(!langMenuOpen)}
+              aria-expanded={langMenuOpen}
+              aria-haspopup="listbox"
+            >
+              <GlobeIcon />
+              <span className="language-current">
+                {LANGUAGES.find((l) => l.code === language)?.flag}{" "}
+                {LANGUAGES.find((l) => l.code === language)?.name}
+              </span>
+              <ChevronDownIcon />
+            </button>
+            {langMenuOpen && (
+              <>
+                <div className="language-dropdown-backdrop" onClick={() => setLangMenuOpen(false)} />
+                <ul className="language-dropdown-menu" role="listbox">
+                  {LANGUAGES.map((lang) => (
+                    <li key={lang.code}>
+                      <button
+                        className={`language-dropdown-item ${language === lang.code ? "active" : ""}`}
+                        onClick={() => {
+                          setLanguage(lang.code);
+                          setLangMenuOpen(false);
+                        }}
+                        role="option"
+                        aria-selected={language === lang.code}
+                      >
+                        <span className="language-flag" aria-hidden="true">{lang.flag}</span>
+                        <span>{lang.name}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
         </div>
         {data ? (
           <Routes>
