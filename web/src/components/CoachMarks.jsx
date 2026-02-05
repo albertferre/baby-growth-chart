@@ -35,7 +35,7 @@ const STEPS = [
     route: "/",
   },
   {
-    target: ".language-switcher",
+    target: ".language-dropdown",
     position: "bottom-left",
     titleKey: "coachLanguageTitle",
     textKey: "coachLanguageText",
