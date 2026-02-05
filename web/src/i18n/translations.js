@@ -20,6 +20,12 @@ export const translations = {
     dataSource: "Data source:",
     dataSourceLink: "WHO Child Growth Standards",
     loading: "Loading data...",
+    skipToContent: "Skip to main content",
+    sidebarLabel: "Sidebar navigation and settings",
+    languageSwitcherLabel: "Language selection",
+    switchToDark: "Switch to dark mode",
+    switchToLight: "Switch to light mode",
+    exportResult: "Export",
 
     // Calculator
     calcTitle: "Percentile Calculator",
@@ -39,6 +45,8 @@ export const translations = {
     calcResultDays: "Days",
     calcResultMonths: "months",
     calcResultEmpty: "Enter data and press Calculate",
+    calcResultHint: "The result will show the percentile based on WHO standards",
+    calcResultLabel: "Calculation results",
     calcWarnSelectDate: "Please select a birth date.",
     calcWarnEnterDays: "Please enter the age in days.",
     calcWarnEnterMonths: "Please enter the age in months.",
@@ -133,6 +141,12 @@ export const translations = {
     dataSource: "Fuente de datos:",
     dataSourceLink: "Estándares de Crecimiento OMS",
     loading: "Cargando datos...",
+    skipToContent: "Saltar al contenido principal",
+    sidebarLabel: "Navegación y ajustes de la barra lateral",
+    languageSwitcherLabel: "Selección de idioma",
+    switchToDark: "Cambiar a modo oscuro",
+    switchToLight: "Cambiar a modo claro",
+    exportResult: "Exportar",
 
     // Calculator
     calcTitle: "Calculadora de Percentiles",
@@ -152,6 +166,8 @@ export const translations = {
     calcResultDays: "Días",
     calcResultMonths: "meses",
     calcResultEmpty: "Introduce los datos y pulsa Calcular",
+    calcResultHint: "El resultado mostrará el percentil basado en los estándares de la OMS",
+    calcResultLabel: "Resultados del cálculo",
     calcWarnSelectDate: "Por favor, selecciona una fecha de nacimiento.",
     calcWarnEnterDays: "Por favor, introduce la edad en días.",
     calcWarnEnterMonths: "Por favor, introduce la edad en meses.",

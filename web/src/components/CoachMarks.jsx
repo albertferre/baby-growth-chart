@@ -282,7 +282,7 @@ export default function CoachMarks() {
 
   return (
     <div className="coach-overlay">
-      {/* Dark overlay with spotlight hole */}
+      {/* Dark overlay with spotlight hole - less intrusive (0.5 opacity) */}
       <svg className="coach-backdrop" width="100%" height="100%">
         <defs>
           <mask id="spotlight-mask">
@@ -300,7 +300,7 @@ export default function CoachMarks() {
         <rect
           width="100%"
           height="100%"
-          fill="rgba(0, 0, 0, 0.75)"
+          fill="rgba(0, 0, 0, 0.5)"
           mask="url(#spotlight-mask)"
         />
       </svg>
