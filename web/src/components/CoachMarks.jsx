@@ -1,44 +1,104 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext";
 
 const STORAGE_KEY = "baby-growth-coach-completed";
 
 const STEPS = [
+  // Sidebar steps
   {
     target: ".sidebar-brand",
     position: "right",
     titleKey: "coachWelcomeTitle",
     textKey: "coachWelcomeText",
+    route: "/",
   },
   {
     target: ".sidebar nav",
     position: "right",
     titleKey: "coachNavTitle",
     textKey: "coachNavText",
+    route: "/",
   },
   {
     target: "[data-coach='metric']",
     position: "right",
     titleKey: "coachMetricTitle",
     textKey: "coachMetricText",
+    route: "/",
   },
   {
     target: ".gender-toggle",
     position: "right",
     titleKey: "coachGenderTitle",
     textKey: "coachGenderText",
+    route: "/",
   },
   {
     target: ".language-switcher",
     position: "bottom-left",
     titleKey: "coachLanguageTitle",
     textKey: "coachLanguageText",
+    route: "/",
   },
+  // Calculator steps
+  {
+    target: ".age-mode-toggle",
+    position: "bottom",
+    titleKey: "coachAgeInputTitle",
+    textKey: "coachAgeInputText",
+    route: "/",
+  },
+  {
+    target: "#measurement",
+    position: "bottom",
+    titleKey: "coachMeasurementTitle",
+    textKey: "coachMeasurementText",
+    route: "/",
+  },
+  {
+    target: ".btn-primary",
+    position: "right",
+    titleKey: "coachCalculateTitle",
+    textKey: "coachCalculateText",
+    route: "/",
+  },
+  {
+    target: ".result-card",
+    position: "left",
+    titleKey: "coachResultTitle",
+    textKey: "coachResultText",
+    route: "/",
+  },
+  // Evolution steps
+  {
+    target: ".dropzone",
+    position: "bottom",
+    titleKey: "coachUploadTitle",
+    textKey: "coachUploadText",
+    route: "/evolution",
+  },
+  {
+    target: ".help-toggle",
+    position: "right",
+    titleKey: "coachHelpTitle",
+    textKey: "coachHelpText",
+    route: "/evolution",
+  },
+  {
+    target: ".plot-card",
+    position: "top",
+    titleKey: "coachChartTitle",
+    textKey: "coachChartText",
+    route: "/evolution",
+  },
+  // Final step
   {
     target: ".medical-disclaimer",
     position: "right",
     titleKey: "coachDisclaimerTitle",
     textKey: "coachDisclaimerText",
+    route: "/evolution",
   },
 ];
 
@@ -57,9 +117,15 @@ function getElementPosition(selector) {
 
 export default function CoachMarks() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [targetPos, setTargetPos] = useState(null);
+
+  // Compute if we need to navigate to a different route
+  const step = STEPS[currentStep];
+  const needsNavigation = step && step.route && location.pathname !== step.route;
 
   // Check if coach marks should be shown
   useEffect(() => {
@@ -75,19 +141,56 @@ export default function CoachMarks() {
     }
   }, []);
 
-  // Update target position when step changes
+  // Navigate to the correct route for current step
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !needsNavigation) return;
+    navigate(step.route);
+  }, [currentStep, isVisible, needsNavigation, navigate, step?.route]);
+
+  // Update target position when step changes or after navigation
+  useEffect(() => {
+    if (!isVisible || needsNavigation) return;
 
     const updatePosition = () => {
       const pos = getElementPosition(STEPS[currentStep].target);
-      setTargetPos(pos);
+      if (pos) {
+        setTargetPos(pos);
+      } else {
+        setTargetPos(null);
+      }
     };
 
-    updatePosition();
+    // Wait a bit for the DOM to update after navigation
+    const timer = setTimeout(updatePosition, 100);
+
     window.addEventListener("resize", updatePosition);
-    return () => window.removeEventListener("resize", updatePosition);
-  }, [currentStep, isVisible]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [currentStep, isVisible, location.pathname, needsNavigation]);
+
+  // Retry finding element if not found initially
+  useEffect(() => {
+    if (!isVisible || targetPos || needsNavigation) return;
+
+    const retryTimer = setInterval(() => {
+      const pos = getElementPosition(STEPS[currentStep].target);
+      if (pos) {
+        setTargetPos(pos);
+      }
+    }, 200);
+
+    // Give up after 2 seconds
+    const timeout = setTimeout(() => {
+      clearInterval(retryTimer);
+    }, 2000);
+
+    return () => {
+      clearInterval(retryTimer);
+      clearTimeout(timeout);
+    };
+  }, [isVisible, targetPos, needsNavigation, currentStep]);
 
   const handleComplete = useCallback(() => {
     setIsVisible(false);
@@ -96,7 +199,9 @@ export default function CoachMarks() {
     } catch {
       // Ignore storage errors
     }
-  }, []);
+    // Navigate back to home
+    navigate("/");
+  }, [navigate]);
 
   const handleNext = useCallback(() => {
     if (currentStep < STEPS.length - 1) {
@@ -116,14 +221,21 @@ export default function CoachMarks() {
     handleComplete();
   }, [handleComplete]);
 
-  if (!isVisible || !targetPos) return null;
+  if (!isVisible) return null;
 
-  const step = STEPS[currentStep];
+  // Show loading state while waiting for navigation or element
+  if (!targetPos || needsNavigation) {
+    return (
+      <div className="coach-overlay">
+        <div className="coach-backdrop-loading" />
+      </div>
+    );
+  }
+
   const padding = 8;
 
   // Calculate tooltip position
   let tooltipStyle = {};
-  const tooltipWidth = 320;
   const tooltipOffset = 16;
 
   switch (step.position) {
@@ -134,9 +246,23 @@ export default function CoachMarks() {
         transform: "translateY(-50%)",
       };
       break;
+    case "left":
+      tooltipStyle = {
+        top: targetPos.rect.top + targetPos.height / 2,
+        right: window.innerWidth - targetPos.rect.left + tooltipOffset,
+        transform: "translateY(-50%)",
+      };
+      break;
     case "bottom":
       tooltipStyle = {
         top: targetPos.rect.bottom + tooltipOffset,
+        left: targetPos.rect.left + targetPos.width / 2,
+        transform: "translateX(-50%)",
+      };
+      break;
+    case "top":
+      tooltipStyle = {
+        bottom: window.innerHeight - targetPos.rect.top + tooltipOffset,
         left: targetPos.rect.left + targetPos.width / 2,
         transform: "translateX(-50%)",
       };
@@ -193,7 +319,7 @@ export default function CoachMarks() {
       {/* Tooltip */}
       <div
         className={`coach-tooltip coach-tooltip-${step.position}`}
-        style={{ ...tooltipStyle, maxWidth: tooltipWidth }}
+        style={{ ...tooltipStyle, maxWidth: 320 }}
       >
         <div className="coach-tooltip-header">
           <h3>{t(step.titleKey)}</h3>
