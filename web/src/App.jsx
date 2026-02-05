@@ -82,16 +82,16 @@ export default function App() {
 
           <nav>
             <NavLink to="/">
-              <span className="nav-icon"><BookIcon /></span>
-              User Manual
-            </NavLink>
-            <NavLink to="/calculator">
               <span className="nav-icon"><CalculatorIcon /></span>
               Calculator
             </NavLink>
             <NavLink to="/evolution">
               <span className="nav-icon"><ChartIcon /></span>
               Evolution
+            </NavLink>
+            <NavLink to="/manual">
+              <span className="nav-icon"><BookIcon /></span>
+              User Manual
             </NavLink>
           </nav>
 
@@ -132,14 +132,24 @@ export default function App() {
               </p>
             </div>
           </div>
+
+          <div className="data-source">
+            Data source:{" "}
+            <a
+              href="https://www.who.int/tools/child-growth-standards/standards"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WHO Child Growth Standards
+            </a>
+          </div>
         </aside>
 
         <main className="content">
           {data ? (
             <Routes>
-              <Route path="/" element={<UserManual />} />
               <Route
-                path="/calculator"
+                path="/"
                 element={<Calculator data={data} measure={measure} gender={gender} />}
               />
               <Route
@@ -148,6 +158,7 @@ export default function App() {
                   <Evolution data={data} measure={measure} gender={gender} />
                 }
               />
+              <Route path="/manual" element={<UserManual />} />
             </Routes>
           ) : (
             <div className="loading">

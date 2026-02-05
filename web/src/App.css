@@ -251,6 +251,23 @@ body {
   margin: 0;
 }
 
+/* Data source */
+.data-source {
+  font-size: 0.6875rem;
+  color: var(--c-text-muted);
+  text-align: center;
+  padding-top: 0.5rem;
+}
+
+.data-source a {
+  color: var(--c-primary);
+  text-decoration: none;
+}
+
+.data-source a:hover {
+  text-decoration: underline;
+}
+
 /* ── Content area ────────────────────────────────── */
 .content {
   flex: 1;
