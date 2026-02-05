@@ -17,7 +17,7 @@ const STEPS = [
     textKey: "coachNavText",
   },
   {
-    target: ".sidebar-section:first-of-type",
+    target: "[data-coach='metric']",
     position: "right",
     titleKey: "coachMetricTitle",
     textKey: "coachMetricText",

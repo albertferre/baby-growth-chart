@@ -110,7 +110,7 @@ function AppContent() {
           </NavLink>
         </nav>
 
-        <div className="sidebar-section">
+        <div className="sidebar-section" data-coach="metric">
           <span className="sidebar-section-label">{t("labelMetric")}</span>
           <select value={measure} onChange={(e) => setMeasure(e.target.value)}>
             {MEASURES.map((m) => (
