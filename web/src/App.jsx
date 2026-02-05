@@ -110,33 +110,40 @@ function AppContent() {
           </NavLink>
         </nav>
 
-        <div className="sidebar-section" data-coach="metric">
-          <span className="sidebar-section-label">{t("labelMetric")}</span>
-          <div className="metric-toggle">
-            {MEASURES.map((m) => (
-              <button
-                key={m}
-                className={measure === m ? "active" : ""}
-                onClick={() => setMeasure(m)}
-              >
-                {getMeasureLabel(m)}
-              </button>
-            ))}
+        <div className="sidebar-settings">
+          <div className="sidebar-settings-header">
+            <span>{t("labelSettings")}</span>
           </div>
-        </div>
+          <div className="sidebar-settings-content">
+            <div className="sidebar-section" data-coach="metric">
+              <span className="sidebar-section-label">{t("labelMetric")}</span>
+              <div className="metric-toggle">
+                {MEASURES.map((m) => (
+                  <button
+                    key={m}
+                    className={measure === m ? "active" : ""}
+                    onClick={() => setMeasure(m)}
+                  >
+                    {getMeasureLabel(m)}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div className="sidebar-section">
-          <span className="sidebar-section-label">{t("labelGender")}</span>
-          <div className="gender-toggle">
-            {GENDERS.map((g) => (
-              <button
-                key={g}
-                className={gender === g ? `active-${g.toLowerCase()}` : ""}
-                onClick={() => setGender(g)}
-              >
-                {getGenderLabel(g)}
-              </button>
-            ))}
+            <div className="sidebar-section">
+              <span className="sidebar-section-label">{t("labelGender")}</span>
+              <div className="gender-toggle">
+                {GENDERS.map((g) => (
+                  <button
+                    key={g}
+                    className={gender === g ? `active-${g.toLowerCase()}` : ""}
+                    onClick={() => setGender(g)}
+                  >
+                    {getGenderLabel(g)}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
