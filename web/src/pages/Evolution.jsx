@@ -67,6 +67,16 @@ function WarningIcon() {
   );
 }
 
+function InfoIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  );
+}
+
 const PLOTLY_LAYOUT_BASE = {
   autosize: true,
   font: { family: "Inter, sans-serif", size: 13 },
@@ -95,6 +105,7 @@ export default function Evolution({ data, measure, gender }) {
   const [babyData, setBabyData] = useState(null);
   const [fileName, setFileName] = useState("");
   const [uploadError, setUploadError] = useState("");
+  const [showHelp, setShowHelp] = useState(false);
 
   const col = MEASURES_INPUT[measure];
   const unit = MEASURES_UNITS[measure];
@@ -113,7 +124,7 @@ export default function Evolution({ data, measure, gender }) {
       );
       if (missing.length) {
         setUploadError(
-          `Missing columns: ${missing.join(", ")}. See user manual for details.`
+          `Missing columns: ${missing.join(", ")}. Click "How to prepare your file" for details.`
         );
         setBabyData(null);
         setFileName("");
@@ -127,10 +138,16 @@ export default function Evolution({ data, measure, gender }) {
       );
       setFileName(file.name);
     } catch {
-      setUploadError("Failed to parse file.");
+      setUploadError("Failed to parse file. Make sure it's a valid Excel file (.xlsx).");
       setBabyData(null);
       setFileName("");
     }
+  }
+
+  function handleClearData() {
+    setBabyData(null);
+    setFileName("");
+    setUploadError("");
   }
 
   const percentileCurves = useMemo(() => {
@@ -194,20 +211,100 @@ export default function Evolution({ data, measure, gender }) {
           <p>WHO percentile curves for {gender.toLowerCase()}</p>
         </div>
 
-        <div className={`dropzone ${fileName ? "has-file" : ""}`}>
-          <input type="file" accept=".xls,.xlsx" onChange={handleFileUpload} />
-          {fileName ? <CheckIcon /> : <UploadIcon />}
-          <span className="dropzone-text">
-            {fileName ? (
-              fileName
-            ) : (
-              <>
-                <strong>Upload</strong> baby data (.xlsx)
-              </>
-            )}
-          </span>
+        <div className="upload-section">
+          <div className={`dropzone ${fileName ? "has-file" : ""}`}>
+            <input type="file" accept=".xls,.xlsx" onChange={handleFileUpload} />
+            {fileName ? <CheckIcon /> : <UploadIcon />}
+            <span className="dropzone-text">
+              {fileName ? (
+                fileName
+              ) : (
+                <>
+                  <strong>Upload</strong> baby data (.xlsx)
+                </>
+              )}
+            </span>
+          </div>
+          {fileName && (
+            <button className="btn-clear" onClick={handleClearData} title="Clear data">
+              &times;
+            </button>
+          )}
         </div>
       </div>
+
+      <button
+        className="help-toggle"
+        onClick={() => setShowHelp(!showHelp)}
+        aria-expanded={showHelp}
+      >
+        <InfoIcon />
+        <span>{showHelp ? "Hide instructions" : "How to prepare your file"}</span>
+      </button>
+
+      {showHelp && (
+        <div className="help-panel">
+          <h3>Excel file format</h3>
+          <p>Your Excel file must have these <strong>4 columns</strong> in the first row (headers):</p>
+
+          <table className="help-table">
+            <thead>
+              <tr>
+                <th>Column</th>
+                <th>Description</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>day</code></td>
+                <td>Age in days (from birth)</td>
+                <td>0, 30, 60, 90...</td>
+              </tr>
+              <tr>
+                <td><code>w</code></td>
+                <td>Weight in kg</td>
+                <td>3.2, 4.5, 5.8...</td>
+              </tr>
+              <tr>
+                <td><code>h</code></td>
+                <td>Height in cm</td>
+                <td>50, 54, 58...</td>
+              </tr>
+              <tr>
+                <td><code>hc</code></td>
+                <td>Head circumference in cm</td>
+                <td>35, 37, 39...</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>Example:</h4>
+          <div className="help-example">
+            <table>
+              <thead>
+                <tr><th>day</th><th>w</th><th>h</th><th>hc</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>0</td><td>3.2</td><td>50</td><td>35</td></tr>
+                <tr><td>30</td><td>4.1</td><td>54</td><td>37</td></tr>
+                <tr><td>60</td><td>5.0</td><td>58</td><td>39</td></tr>
+                <tr><td>90</td><td>5.8</td><td>61</td><td>40</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="help-tips">
+            <h4>Tips:</h4>
+            <ul>
+              <li>Column names must be <strong>exactly</strong> as shown (lowercase)</li>
+              <li>You can leave cells empty if you don&apos;t have that measurement</li>
+              <li>Use decimal point (.) not comma (,) for decimals</li>
+              <li>Data must be in the <strong>first sheet</strong> of the Excel file</li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       {uploadError && (
         <div className="warning" style={{ marginBottom: "1rem" }}>

@@ -43,6 +43,14 @@ function ChartIcon() {
   );
 }
 
+function MedicalIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  );
+}
+
 export default function App() {
   const [measure, setMeasure] = useState("Weight");
   const [gender, setGender] = useState("Boys");
@@ -50,7 +58,6 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    setData(null);
     loadData(gender, measure).then((d) => {
       if (!cancelled) setData(d);
     });
@@ -75,16 +82,16 @@ export default function App() {
 
           <nav>
             <NavLink to="/">
-              <span className="nav-icon"><BookIcon /></span>
-              User Manual
-            </NavLink>
-            <NavLink to="/calculator">
               <span className="nav-icon"><CalculatorIcon /></span>
               Calculator
             </NavLink>
             <NavLink to="/evolution">
               <span className="nav-icon"><ChartIcon /></span>
               Evolution
+            </NavLink>
+            <NavLink to="/manual">
+              <span className="nav-icon"><BookIcon /></span>
+              User Manual
             </NavLink>
           </nav>
 
@@ -111,14 +118,38 @@ export default function App() {
               ))}
             </div>
           </div>
+
+          <div className="medical-disclaimer">
+            <div className="medical-disclaimer-icon">
+              <MedicalIcon />
+            </div>
+            <div className="medical-disclaimer-content">
+              <strong>Medical disclaimer</strong>
+              <p>
+                This tool is for informational purposes only.
+                For any health concerns about your baby&apos;s growth,
+                please consult a pediatrician or healthcare professional.
+              </p>
+            </div>
+          </div>
+
+          <div className="data-source">
+            Data source:{" "}
+            <a
+              href="https://www.who.int/tools/child-growth-standards/standards"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WHO Child Growth Standards
+            </a>
+          </div>
         </aside>
 
         <main className="content">
           {data ? (
             <Routes>
-              <Route path="/" element={<UserManual />} />
               <Route
-                path="/calculator"
+                path="/"
                 element={<Calculator data={data} measure={measure} gender={gender} />}
               />
               <Route
@@ -127,6 +158,7 @@ export default function App() {
                   <Evolution data={data} measure={measure} gender={gender} />
                 }
               />
+              <Route path="/manual" element={<UserManual />} />
             </Routes>
           ) : (
             <div className="loading">

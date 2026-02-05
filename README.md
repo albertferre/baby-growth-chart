@@ -4,9 +4,10 @@ Visualize and calculate WHO growth percentiles (weight, height, head circumferen
 
 ## Features
 
-- **Percentile Calculator** — enter birth date and a measurement to get the exact growth percentile using the LMS method.
+- **Percentile Calculator** — enter age (birth date, days, or months) and a measurement to get the exact growth percentile using the LMS method. Birth date is saved for future visits.
 - **Time Series Evolution** — interactive Plotly charts with P01, P25, P50, P75 and P99 curves. Upload your own Excel data to overlay and track your baby's growth.
 - **User Manual** — in-app documentation explaining how to use each feature.
+- **Medical Disclaimer** — clear warning that this tool is for informational purposes only.
 
 ## Quick start
 
@@ -36,6 +37,21 @@ For a production build:
 make web-build   # outputs to web/dist/
 ```
 
+## Deploy to Vercel (free)
+
+The React web app is ready to deploy on [Vercel](https://vercel.com):
+
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com) and import your repository
+3. Configure the project:
+   - **Root Directory**: `web`
+   - **Framework Preset**: Vite
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Click **Deploy**
+
+Vercel will automatically deploy on every push to your main branch.
+
 ## Project structure
 
 ```
@@ -48,6 +64,7 @@ make web-build   # outputs to web/dist/
 │   ├── src/
 │   │   ├── pages/          #   Calculator, Evolution, UserManual
 │   │   └── utils/          #   LMS percentile math, data loading
+│   ├── vercel.json         #   Vercel deployment config
 │   └── package.json
 ├── Makefile
 └── pyproject.toml
@@ -80,6 +97,7 @@ Growth percentile data is sourced from the [World Health Organization (WHO)](htt
 | **Charts** | Plotly | react-plotly.js |
 | **Percentile math** | scipy (norm.cdf) | Custom normal CDF (Abramowitz & Stegun) |
 | **Data loading** | pandas + openpyxl | Pre-converted JSON via fetch |
+| **Hosting** | Streamlit Cloud | Vercel |
 
 ## License
 
