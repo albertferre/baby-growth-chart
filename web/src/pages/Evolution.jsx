@@ -78,29 +78,32 @@ function InfoIcon() {
   );
 }
 
-const PLOTLY_LAYOUT_BASE = {
-  autosize: true,
-  font: { family: "Inter, sans-serif", size: 13 },
-  paper_bgcolor: "transparent",
-  plot_bgcolor: "transparent",
-  margin: { t: 48, r: 24, b: 56, l: 56 },
-  xaxis: {
-    gridcolor: "#f1f5f9",
-    zerolinecolor: "#e2e8f0",
-    title: { text: "Days", font: { size: 12, color: "#64748b" } },
-  },
-  yaxis: {
-    gridcolor: "#f1f5f9",
-    zerolinecolor: "#e2e8f0",
-  },
-  legend: {
-    orientation: "h",
-    y: -0.18,
-    x: 0.5,
-    xanchor: "center",
-    font: { size: 11 },
-  },
-};
+function getPlotlyLayoutBase() {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  return {
+    autosize: true,
+    font: { family: "Inter, sans-serif", size: 13, color: isDark ? "#a8a3b8" : "#5c566b" },
+    paper_bgcolor: "transparent",
+    plot_bgcolor: "transparent",
+    margin: { t: 48, r: 24, b: 56, l: 56 },
+    xaxis: {
+      gridcolor: isDark ? "rgba(255,255,255,0.06)" : "#f3f0eb",
+      zerolinecolor: isDark ? "rgba(255,255,255,0.08)" : "#e8e4dd",
+      title: { text: "Days", font: { size: 12, color: isDark ? "#6e6880" : "#5c566b" } },
+    },
+    yaxis: {
+      gridcolor: isDark ? "rgba(255,255,255,0.06)" : "#f3f0eb",
+      zerolinecolor: isDark ? "rgba(255,255,255,0.08)" : "#e8e4dd",
+    },
+    legend: {
+      orientation: "h",
+      y: -0.18,
+      x: 0.5,
+      xanchor: "center",
+      font: { size: 11, color: isDark ? "#a8a3b8" : "#5c566b" },
+    },
+  };
+}
 
 export default function Evolution({ data, measure, gender }) {
   const { t } = useLanguage();
@@ -183,12 +186,13 @@ export default function Evolution({ data, measure, gender }) {
       }));
   }, [babyData, data]);
 
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
   const pCurveStyles = {
-    P01: { color: "#cbd5e1", dash: "dot", width: 1 },
-    P25: { color: "#94a3b8", dash: "dash", width: 1.5 },
-    P50: { color: "#64748b", width: 2 },
-    P75: { color: "#94a3b8", dash: "dash", width: 1.5 },
-    P99: { color: "#cbd5e1", dash: "dot", width: 1 },
+    P01: { color: isDark ? "#3d3756" : "#d4d0e0", dash: "dot", width: 1 },
+    P25: { color: isDark ? "#5c566b" : "#a8a3b8", dash: "dash", width: 1.5 },
+    P50: { color: isDark ? "#8f899e" : "#7c7694", width: 2 },
+    P75: { color: isDark ? "#5c566b" : "#a8a3b8", dash: "dash", width: 1.5 },
+    P99: { color: isDark ? "#3d3756" : "#d4d0e0", dash: "dot", width: 1 },
   };
 
   const traces = Object.entries(pCurveStyles).map(([key, style]) => ({
@@ -328,14 +332,14 @@ export default function Evolution({ data, measure, gender }) {
         <Plot
           data={traces}
           layout={{
-            ...PLOTLY_LAYOUT_BASE,
+            ...getPlotlyLayoutBase(),
             title: {
               text: t("evoChartTitle", { measure: getMeasureLabel(), gender: gender === "Boys" ? t("genderBoys") : t("genderGirls") }),
-              font: { size: 15, color: "#1e293b", family: "Inter, sans-serif" },
+              font: { size: 15, color: document.documentElement.getAttribute("data-theme") === "dark" ? "#f0eef5" : "#1a1625", family: "Inter, sans-serif", weight: 700 },
             },
             yaxis: {
-              ...PLOTLY_LAYOUT_BASE.yaxis,
-              title: { text: unit, font: { size: 12, color: "#64748b" } },
+              ...getPlotlyLayoutBase().yaxis,
+              title: { text: unit, font: { size: 12, color: document.documentElement.getAttribute("data-theme") === "dark" ? "#6e6880" : "#5c566b" } },
             },
           }}
           config={{ displayModeBar: false, responsive: true }}
@@ -362,14 +366,14 @@ export default function Evolution({ data, measure, gender }) {
               },
             ]}
             layout={{
-              ...PLOTLY_LAYOUT_BASE,
+              ...getPlotlyLayoutBase(),
               title: {
                 text: t("evoChartPercentile"),
-                font: { size: 15, color: "#1e293b", family: "Inter, sans-serif" },
+                font: { size: 15, color: document.documentElement.getAttribute("data-theme") === "dark" ? "#f0eef5" : "#1a1625", family: "Inter, sans-serif", weight: 700 },
               },
               yaxis: {
-                ...PLOTLY_LAYOUT_BASE.yaxis,
-                title: { text: `${getMeasureLabel()} percentile`, font: { size: 12, color: "#64748b" } },
+                ...getPlotlyLayoutBase().yaxis,
+                title: { text: `${getMeasureLabel()} percentile`, font: { size: 12, color: document.documentElement.getAttribute("data-theme") === "dark" ? "#6e6880" : "#5c566b" } },
                 range: [0, 105],
               },
               showlegend: false,

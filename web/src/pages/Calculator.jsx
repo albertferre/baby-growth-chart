@@ -332,34 +332,35 @@ export default function Calculator({ data, measure, gender }) {
           {result ? (
             <>
               <div className="percentile-display">
-                <span className="percentile-number animated" style={{ color: pColor }}>
-                  {result.percentile}%
-                </span>
-                <span className="percentile-label">{t("calcResultPercentile")}</span>
-
-                <div className="percentile-bar">
-                  <div
-                    className="percentile-bar-fill"
-                    style={{
-                      width: `${pNum}%`,
-                      background: `linear-gradient(90deg, ${pColor}33, ${pColor})`,
-                    }}
-                  />
-                  <div
-                    className="percentile-bar-marker"
-                    style={{ left: `${pNum}%`, background: pColor }}
-                  />
-                </div>
-                <div className="percentile-range">
-                  <span>0</span>
-                  <span>25</span>
-                  <span>50</span>
-                  <span>75</span>
-                  <span>100</span>
+                <div className="percentile-gauge">
+                  <svg viewBox="0 0 140 140">
+                    <circle
+                      className="percentile-gauge-bg"
+                      cx="70"
+                      cy="70"
+                      r="60"
+                    />
+                    <circle
+                      className="percentile-gauge-fill"
+                      cx="70"
+                      cy="70"
+                      r="60"
+                      stroke={pColor}
+                      strokeDasharray={`${2 * Math.PI * 60}`}
+                      strokeDashoffset={`${2 * Math.PI * 60 * (1 - pNum / 100)}`}
+                      style={{ filter: `drop-shadow(0 0 6px ${pColor}40)` }}
+                    />
+                  </svg>
+                  <div className="percentile-gauge-value">
+                    <span className="percentile-number animated" style={{ color: pColor }}>
+                      {result.percentile}%
+                    </span>
+                    <span className="percentile-label">{t("calcResultPercentile")}</span>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "1.5rem" }}>
+              <div className="result-stats-row">
                 <div className="result-stat">
                   <span className="result-stat-label">{t("calcResultAge")}</span>
                   <span className="result-stat-value">{result.months} {t("calcResultMonths")}</span>
