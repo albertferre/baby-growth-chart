@@ -132,15 +132,6 @@ function AppContent() {
           </div>
         </div>
 
-        <div className="sidebar-section">
-          <span className="sidebar-section-label">{t("labelLanguage")}</span>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-            {LANGUAGES.map((lang) => (
-              <option key={lang.code} value={lang.code}>{lang.name}</option>
-            ))}
-          </select>
-        </div>
-
         <div className="medical-disclaimer">
           <div className="medical-disclaimer-icon">
             <MedicalIcon />
@@ -164,6 +155,19 @@ function AppContent() {
       </aside>
 
       <main className="content">
+        <div className="language-switcher">
+          {LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              className={`language-btn ${language === lang.code ? "active" : ""}`}
+              onClick={() => setLanguage(lang.code)}
+              title={lang.name}
+            >
+              <span className="language-flag">{lang.flag}</span>
+              <span className="language-code">{lang.code.toUpperCase()}</span>
+            </button>
+          ))}
+        </div>
         {data ? (
           <Routes>
             <Route
