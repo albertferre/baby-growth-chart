@@ -77,6 +77,24 @@ export const translations = {
     manualTitle: "User Manual",
     manualLoading: "Loading...",
     manualError: "Could not load user manual.",
+
+    // Coach Marks
+    coachSkip: "Skip tour",
+    coachPrev: "Back",
+    coachNext: "Next",
+    coachFinish: "Got it!",
+    coachWelcomeTitle: "Welcome!",
+    coachWelcomeText: "This app helps you track your baby's growth using WHO standards. Let's take a quick tour!",
+    coachNavTitle: "Navigation",
+    coachNavText: "Use these links to switch between the Calculator (single measurement), Evolution (charts over time), and User Manual.",
+    coachMetricTitle: "Choose a Metric",
+    coachMetricText: "Select what you want to measure: Weight, Height, or Head Circumference.",
+    coachGenderTitle: "Select Gender",
+    coachGenderText: "WHO growth charts differ by gender. Select your baby's gender here.",
+    coachLanguageTitle: "Language",
+    coachLanguageText: "You can switch between English and Spanish at any time.",
+    coachDisclaimerTitle: "Important",
+    coachDisclaimerText: "Remember: this tool is for reference only. Always consult your pediatrician for medical advice.",
   },
 
   es: {
@@ -157,6 +175,24 @@ export const translations = {
     manualTitle: "Manual de Usuario",
     manualLoading: "Cargando...",
     manualError: "No se pudo cargar el manual de usuario.",
+
+    // Coach Marks
+    coachSkip: "Saltar tour",
+    coachPrev: "Atrás",
+    coachNext: "Siguiente",
+    coachFinish: "¡Entendido!",
+    coachWelcomeTitle: "¡Bienvenido!",
+    coachWelcomeText: "Esta app te ayuda a seguir el crecimiento de tu bebé usando los estándares de la OMS. ¡Hagamos un tour rápido!",
+    coachNavTitle: "Navegación",
+    coachNavText: "Usa estos enlaces para cambiar entre la Calculadora (medida individual), Evolución (gráficos en el tiempo) y Manual de Usuario.",
+    coachMetricTitle: "Elige una Métrica",
+    coachMetricText: "Selecciona qué quieres medir: Peso, Altura o Perímetro Craneal.",
+    coachGenderTitle: "Selecciona el Sexo",
+    coachGenderText: "Las curvas de crecimiento de la OMS varían según el sexo. Selecciona el sexo de tu bebé aquí.",
+    coachLanguageTitle: "Idioma",
+    coachLanguageText: "Puedes cambiar entre inglés y español en cualquier momento.",
+    coachDisclaimerTitle: "Importante",
+    coachDisclaimerText: "Recuerda: esta herramienta es solo de referencia. Consulta siempre con tu pediatra para consejos médicos.",
   },
 };
 

@@ -1044,3 +1044,189 @@ body {
     align-items: stretch;
   }
 }
+
+/* ── Coach Marks ─────────────────────────────────── */
+.coach-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.coach-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: auto;
+}
+
+.coach-spotlight {
+  position: fixed;
+  border: 2px solid var(--c-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+  pointer-events: none;
+  animation: coach-pulse 2s ease-in-out infinite;
+}
+
+@keyframes coach-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1);
+  }
+}
+
+.coach-tooltip {
+  position: fixed;
+  background: var(--c-surface);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--c-border);
+  pointer-events: auto;
+  animation: fadeInUp 0.3s ease;
+  z-index: 1001;
+}
+
+.coach-tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.coach-tooltip-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--c-text);
+  margin: 0;
+}
+
+.coach-step-indicator {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--c-text-muted);
+  background: var(--c-bg);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.coach-tooltip p {
+  font-size: 0.875rem;
+  color: var(--c-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.coach-tooltip-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.coach-btn-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.coach-btn-skip {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--c-text-muted);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.coach-btn-skip:hover {
+  color: var(--c-text-secondary);
+}
+
+.coach-btn-prev {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  color: var(--c-text-secondary);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.coach-btn-prev:hover {
+  background: var(--c-bg);
+  border-color: var(--c-text-muted);
+}
+
+.coach-btn-next {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--c-primary);
+  color: white;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.coach-btn-next:hover {
+  background: var(--c-primary-hover);
+}
+
+/* Tooltip arrow positions */
+.coach-tooltip-right::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid transparent;
+  border-right-color: var(--c-surface);
+  filter: drop-shadow(-2px 0 1px rgba(0, 0, 0, 0.05));
+}
+
+.coach-tooltip-bottom::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-bottom-color: var(--c-surface);
+  filter: drop-shadow(0 -2px 1px rgba(0, 0, 0, 0.05));
+}
+
+.coach-tooltip-bottom-left::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 24px;
+  border: 8px solid transparent;
+  border-bottom-color: var(--c-surface);
+  filter: drop-shadow(0 -2px 1px rgba(0, 0, 0, 0.05));
+}
+
+/* Mobile adjustments for coach marks */
+@media (max-width: 768px) {
+  .coach-tooltip {
+    position: fixed !important;
+    bottom: 1rem !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    top: auto !important;
+    transform: none !important;
+    max-width: none !important;
+  }
+
+  .coach-tooltip::before {
+    display: none;
+  }
+}
