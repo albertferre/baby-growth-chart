@@ -38,6 +38,8 @@ To upload your baby's data, create an Excel file with these columns:
 | `h` | Height (cm) | 50, 54... |
 | `hc` | Head circumference (cm) | 35, 37... |
 
+You can also click **"Download template"** on the Evolution page to get a pre-filled `.xlsx` file with the correct format and sample data.
+
 ## Tech Stack
 
 - React 19

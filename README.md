@@ -5,7 +5,7 @@ Visualize and calculate WHO growth percentiles (weight, height, head circumferen
 ## Features
 
 - **Percentile Calculator** — enter age (birth date, days, or months) and a measurement to get the exact growth percentile using the LMS method. Birth date is saved for future visits.
-- **Time Series Evolution** — interactive Plotly charts with P01, P25, P50, P75 and P99 curves. Upload your own Excel data to overlay and track your baby's growth.
+- **Time Series Evolution** — interactive Plotly charts with P01, P25, P50, P75 and P99 curves. Upload your own Excel data to overlay and track your baby's growth, or download a pre-filled template to get started quickly.
 - **User Manual** — in-app documentation explaining how to use each feature.
 - **Medical Disclaimer** — clear warning that this tool is for informational purposes only.
 
