@@ -325,6 +325,33 @@ function AppContent() {
             )}
           </div>
         </div>
+        <div className="mobile-settings">
+          <div className="mobile-settings-row">
+            <div className="metric-toggle">
+              {MEASURES.map((m) => (
+                <button
+                  key={m}
+                  className={measure === m ? "active" : ""}
+                  onClick={() => setMeasure(m)}
+                >
+                  {getMeasureLabel(m)}
+                </button>
+              ))}
+            </div>
+            <div className="gender-toggle">
+              {GENDERS.map((g) => (
+                <button
+                  key={g}
+                  className={gender === g ? `active-${g.toLowerCase()}` : ""}
+                  onClick={() => setGender(g)}
+                >
+                  {getGenderLabel(g)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {data ? (
           <Routes>
             <Route

@@ -362,6 +362,11 @@ select:focus-visible {
   gap: 1rem;
 }
 
+/* Mobile settings - hidden on desktop, shown on mobile */
+.mobile-settings {
+  display: none;
+}
+
 /* Sidebar sections */
 .sidebar-section {
   display: flex;
@@ -1907,6 +1912,24 @@ select:focus-visible {
   /* Show mobile settings panel */
   .mobile-settings {
     display: block;
+  }
+
+  .mobile-settings-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .mobile-settings .metric-toggle {
+    flex-direction: row;
+  }
+
+  .mobile-settings .metric-toggle button,
+  .mobile-settings .gender-toggle button {
+    flex: 1;
+    text-align: center;
+    min-height: 44px;
+    font-size: 0.8125rem;
   }
 
   .content {
