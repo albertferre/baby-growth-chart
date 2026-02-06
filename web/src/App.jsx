@@ -189,6 +189,7 @@ function AppContent() {
             </svg>
           </div>
           <h2>{t("appTitle")}</h2>
+          <span className="app-version">v{__APP_VERSION__}</span>
         </div>
 
         <nav>
