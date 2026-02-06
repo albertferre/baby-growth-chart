@@ -81,6 +81,7 @@ export const translations = {
     evoChartTitle: "{measure} Percentiles — {gender}",
     evoChartPercentile: "Percentile over time",
     evoBaby: "Baby",
+    evoDownloadTemplate: "Download template",
 
     // User Manual
     manualTitle: "User Manual",
@@ -202,6 +203,7 @@ export const translations = {
     evoChartTitle: "Percentiles de {measure} — {gender}",
     evoChartPercentile: "Percentil a lo largo del tiempo",
     evoBaby: "Bebé",
+    evoDownloadTemplate: "Descargar plantilla",
 
     // User Manual
     manualTitle: "Manual de Usuario",
@@ -323,6 +325,7 @@ export const translations = {
     evoChartTitle: "Percentils de {measure} — {gender}",
     evoChartPercentile: "Percentil al llarg del temps",
     evoBaby: "Nadó",
+    evoDownloadTemplate: "Descarregar plantilla",
 
     // User Manual
     manualTitle: "Manual d'Usuari",

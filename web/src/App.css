@@ -1170,6 +1170,13 @@ select:focus-visible {
   font-weight: 500;
 }
 
+/* Upload actions wrapper */
+.upload-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 /* Upload section */
 .upload-section {
   display: flex;
@@ -1197,6 +1204,36 @@ select:focus-visible {
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.3);
   color: #dc2626;
+}
+
+/* Download template button */
+.btn-template {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--c-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btn-template:hover {
+  background: var(--c-primary-light);
+  border-color: rgba(124, 58, 237, 0.2);
+  color: var(--c-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-template svg {
+  flex-shrink: 0;
 }
 
 /* Help toggle & panel */

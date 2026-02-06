@@ -58,6 +58,16 @@ function CheckIcon() {
   );
 }
 
+function DownloadIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+
 function WarningIcon() {
   return (
     <svg className="warning-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -126,6 +136,19 @@ export default function Evolution({ data, measure, gender }) {
   const getGenderLabel = () => {
     return gender === "Boys" ? t("genderBoys").toLowerCase() : t("genderGirls").toLowerCase();
   };
+
+  async function downloadTemplate() {
+    const XLSX = await import("xlsx");
+    const data = [
+      { day: 0, w: 3.2, h: 50, hc: 35 },
+      { day: 30, w: 4.1, h: 54, hc: 37 },
+      { day: 60, w: 5.0, h: 58, hc: 39 },
+    ];
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "baby-growth-template.xlsx");
+  }
 
   async function handleFileUpload(e) {
     const file = e.target.files[0];
@@ -226,25 +249,30 @@ export default function Evolution({ data, measure, gender }) {
           <p>{t("evoSubtitle", { gender: getGenderLabel() })}</p>
         </div>
 
-        <div className="upload-section">
-          <div className={`dropzone ${fileName ? "has-file" : ""}`}>
-            <input type="file" accept=".xls,.xlsx" onChange={handleFileUpload} />
-            {fileName ? <CheckIcon /> : <UploadIcon />}
-            <span className="dropzone-text">
-              {fileName ? (
-                fileName
-              ) : (
-                <>
-                  <strong>{t("evoUpload")}</strong> {t("evoUploadHint")}
-                </>
-              )}
-            </span>
+        <div className="upload-actions">
+          <div className="upload-section">
+            <div className={`dropzone ${fileName ? "has-file" : ""}`}>
+              <input type="file" accept=".xls,.xlsx" onChange={handleFileUpload} />
+              {fileName ? <CheckIcon /> : <UploadIcon />}
+              <span className="dropzone-text">
+                {fileName ? (
+                  fileName
+                ) : (
+                  <>
+                    <strong>{t("evoUpload")}</strong> {t("evoUploadHint")}
+                  </>
+                )}
+              </span>
+            </div>
+            {fileName && (
+              <button className="btn-clear" onClick={handleClearData} title="Clear data">
+                &times;
+              </button>
+            )}
           </div>
-          {fileName && (
-            <button className="btn-clear" onClick={handleClearData} title="Clear data">
-              &times;
-            </button>
-          )}
+          <button className="btn-template" onClick={downloadTemplate}>
+            <DownloadIcon /> {t("evoDownloadTemplate")}
+          </button>
         </div>
       </div>
 
