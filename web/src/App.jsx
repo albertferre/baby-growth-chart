@@ -7,6 +7,8 @@ import Calculator from "./pages/Calculator";
 import Evolution from "./pages/Evolution";
 import UserManual from "./pages/UserManual";
 import CoachMarks from "./components/CoachMarks";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import "./App.css";
 
 const MEASURES = ["Weight", "Height", "Head Circumference"];
@@ -384,6 +386,8 @@ export default function App() {
       <BrowserRouter>
         <AppContent />
       </BrowserRouter>
+      <Analytics />
+      <SpeedInsights />
     </LanguageProvider>
   );
 }
