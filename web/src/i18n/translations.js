@@ -1,5 +1,13 @@
 export const translations = {
   en: {
+    // SEO Meta
+    seoHomeTitle: "Baby Growth Chart — WHO Percentile Calculator & Growth Tracking",
+    seoHomeDescription: "Free baby growth chart tool using WHO standards. Calculate weight, height, and head circumference percentiles for children 0-5 years. Track your baby's growth evolution with interactive charts.",
+    seoEvolutionTitle: "Growth Evolution Charts — Baby Growth Chart",
+    seoEvolutionDescription: "Track your baby's growth over time with interactive WHO percentile charts. Upload measurements to visualize weight, height, and head circumference evolution from birth to 5 years.",
+    seoManualTitle: "User Manual — Baby Growth Chart",
+    seoManualDescription: "Learn how to use the Baby Growth Chart tool. Guide for calculating WHO growth percentiles, uploading Excel data, and interpreting growth evolution charts.",
+
     // App / Sidebar
     appTitle: "Baby Growth Chart",
     navCalculator: "Calculator",
@@ -122,6 +130,14 @@ export const translations = {
   },
 
   es: {
+    // SEO Meta
+    seoHomeTitle: "Curvas de Crecimiento Bebé — Calculadora de Percentiles OMS",
+    seoHomeDescription: "Herramienta gratuita de curvas de crecimiento infantil con estándares OMS. Calcula percentiles de peso, altura y perímetro craneal para niños de 0 a 5 años.",
+    seoEvolutionTitle: "Gráficos de Evolución del Crecimiento — Curvas de Crecimiento",
+    seoEvolutionDescription: "Sigue la evolución del crecimiento de tu bebé con gráficos interactivos de percentiles OMS. Sube medidas para visualizar peso, altura y perímetro craneal desde el nacimiento hasta los 5 años.",
+    seoManualTitle: "Manual de Usuario — Curvas de Crecimiento Bebé",
+    seoManualDescription: "Aprende a usar la herramienta de Curvas de Crecimiento. Guía para calcular percentiles OMS, subir datos Excel e interpretar gráficos de evolución.",
+
     // App / Sidebar
     appTitle: "Curvas de Crecimiento",
     navCalculator: "Calculadora",
@@ -244,6 +260,14 @@ export const translations = {
   },
 
   ca: {
+    // SEO Meta
+    seoHomeTitle: "Corbes de Creixement Nadó — Calculadora de Percentils OMS",
+    seoHomeDescription: "Eina gratuïta de corbes de creixement infantil amb estàndards OMS. Calcula percentils de pes, alçada i perímetre cranial per a nens de 0 a 5 anys.",
+    seoEvolutionTitle: "Gràfics d'Evolució del Creixement — Corbes de Creixement",
+    seoEvolutionDescription: "Segueix l'evolució del creixement del teu nadó amb gràfics interactius de percentils OMS. Puja mesures per visualitzar pes, alçada i perímetre cranial des del naixement fins als 5 anys.",
+    seoManualTitle: "Manual d'Usuari — Corbes de Creixement Nadó",
+    seoManualDescription: "Aprèn a usar l'eina de Corbes de Creixement. Guia per calcular percentils OMS, pujar dades Excel i interpretar gràfics d'evolució.",
+
     // App / Sidebar
     appTitle: "Corbes de Creixement",
     navCalculator: "Calculadora",

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://baby-growth-chart.vercel.app/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://baby-growth-chart.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://baby-growth-chart.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="ca" href="https://baby-growth-chart.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://baby-growth-chart.vercel.app/" />
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://baby-growth-chart.vercel.app/evolution</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://baby-growth-chart.vercel.app/evolution" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://baby-growth-chart.vercel.app/evolution" />
+    <xhtml:link rel="alternate" hreflang="ca" href="https://baby-growth-chart.vercel.app/evolution" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://baby-growth-chart.vercel.app/evolution" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://baby-growth-chart.vercel.app/manual</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://baby-growth-chart.vercel.app/manual" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://baby-growth-chart.vercel.app/manual" />
+    <xhtml:link rel="alternate" hreflang="ca" href="https://baby-growth-chart.vercel.app/manual" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://baby-growth-chart.vercel.app/manual" />
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+</urlset>

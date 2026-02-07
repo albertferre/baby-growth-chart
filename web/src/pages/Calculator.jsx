@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS } from "../utils/data";
 import { useLanguage } from "../i18n/LanguageContext";
+import SEOHead from "../components/SEOHead";
 
 const STORAGE_KEY_BIRTHDATE = "baby-growth-birthdate";
 
@@ -207,6 +208,11 @@ export default function Calculator({ data, measure, gender }) {
 
   return (
     <div className="page">
+      <SEOHead
+        title={t("seoHomeTitle")}
+        description={t("seoHomeDescription")}
+        path="/"
+      />
       <div className="page-header">
         <h1>{t("calcTitle")}</h1>
         <p>{t("calcSubtitle")}</p>

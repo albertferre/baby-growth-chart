@@ -3,11 +3,127 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta Tags -->
+    <title>Baby Growth Chart — WHO Percentile Calculator & Growth Tracking</title>
+    <meta name="description" content="Free baby growth chart tool using WHO standards. Calculate weight, height, and head circumference percentiles for children 0-5 years. Track your baby's growth evolution with interactive charts." />
+    <meta name="keywords" content="baby growth chart, WHO percentiles, child growth standards, baby weight percentile, baby height percentile, head circumference, growth tracker, pediatric growth chart, curvas de crecimiento, percentil bebé" />
+    <meta name="author" content="albertferre" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://baby-growth-chart.vercel.app/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://baby-growth-chart.vercel.app/" />
+    <meta property="og:title" content="Baby Growth Chart — WHO Percentile Calculator" />
+    <meta property="og:description" content="Free tool to calculate baby growth percentiles using WHO standards. Track weight, height, and head circumference for children 0-5 years." />
+    <meta property="og:site_name" content="Baby Growth Chart" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="ca_ES" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Baby Growth Chart — WHO Percentile Calculator" />
+    <meta name="twitter:description" content="Free tool to calculate baby growth percentiles using WHO standards. Track weight, height, and head circumference for children 0-5 years." />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Theme & Fonts -->
+    <meta name="theme-color" content="#7c3aed" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <meta name="theme-color" content="#7c3aed" />
-    <title>Baby Growth Chart</title>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Baby Growth Chart",
+      "description": "Free baby growth chart tool using WHO Child Growth Standards. Calculate weight, height, and head circumference percentiles for children aged 0-5 years.",
+      "url": "https://baby-growth-chart.vercel.app",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "albertferre",
+        "url": "https://github.com/albertferre"
+      },
+      "inLanguage": ["en", "es", "ca"],
+      "isAccessibleForFree": true,
+      "featureList": [
+        "WHO growth percentile calculator",
+        "Weight, height, and head circumference tracking",
+        "Interactive growth evolution charts",
+        "Excel data upload and visualization",
+        "Multi-language support (English, Spanish, Catalan)"
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MedicalWebPage",
+      "name": "Baby Growth Percentile Calculator",
+      "description": "Calculate your baby's growth percentile based on WHO Child Growth Standards for weight, height, and head circumference.",
+      "url": "https://baby-growth-chart.vercel.app",
+      "specialty": "Pediatrics",
+      "about": {
+        "@type": "MedicalCondition",
+        "name": "Child Growth and Development"
+      },
+      "lastReviewed": "2025-01-01",
+      "medicalAudience": {
+        "@type": "MedicalAudience",
+        "audienceType": "Patient"
+      },
+      "citation": {
+        "@type": "CreativeWork",
+        "name": "WHO Child Growth Standards",
+        "url": "https://www.who.int/tools/child-growth-standards/standards"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a baby growth percentile?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A growth percentile shows how your baby's measurements compare to other children of the same age and sex. For example, if your baby is at the 75th percentile for weight, it means they weigh more than 75% of babies the same age."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What WHO growth standards does this tool use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "This tool uses the WHO Child Growth Standards, which describe the growth of healthy children from birth to 5 years of age. The standards include weight-for-age, length/height-for-age, and head circumference-for-age percentiles."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I track my baby's growth over time?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the Evolution page to upload an Excel file with your baby's measurements over time. The tool will display interactive charts showing your baby's growth alongside WHO percentile curves (P1, P25, P50, P75, P99)."
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
