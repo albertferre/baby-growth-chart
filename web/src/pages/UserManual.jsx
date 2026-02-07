@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useLanguage } from "../i18n/LanguageContext";
+import SEOHead from "../components/SEOHead";
 
 export default function UserManual() {
   const { t } = useLanguage();
@@ -44,6 +45,11 @@ export default function UserManual() {
 
   return (
     <div className="page">
+      <SEOHead
+        title={t("seoManualTitle")}
+        description={t("seoManualDescription")}
+        path="/manual"
+      />
       <div className="manual-content">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>

@@ -3,6 +3,7 @@ import Plot from "react-plotly.js";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS, MEASURES_INPUT } from "../utils/data";
 import { useLanguage } from "../i18n/LanguageContext";
+import SEOHead from "../components/SEOHead";
 
 function linearInterpolate(arr) {
   const result = [...arr];
@@ -243,6 +244,11 @@ export default function Evolution({ data, measure, gender }) {
 
   return (
     <div className="page">
+      <SEOHead
+        title={t("seoEvolutionTitle")}
+        description={t("seoEvolutionDescription")}
+        path="/evolution"
+      />
       <div className="evolution-header">
         <div className="page-header" style={{ marginBottom: 0 }}>
           <h1>{t("evoTitle", { measure: getMeasureLabel() })}</h1>
