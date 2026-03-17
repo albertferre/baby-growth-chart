@@ -172,11 +172,9 @@ function AppContent() {
   const [activeProfileId, setActiveProfile] = useState(() => getActiveProfileId());
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [newProfileName, setNewProfileName] = useState("");
-  const [profileVersion, setProfileVersion] = useState(0);
 
   const refreshProfiles = useCallback(() => {
     setProfiles(getProfiles());
-    setProfileVersion((v) => v + 1);
   }, []);
 
   const handleCreateProfile = () => {

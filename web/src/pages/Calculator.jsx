@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS } from "../utils/data";
@@ -295,15 +295,14 @@ function getSavedValues() {
 export default function Calculator({ allData, gender, activeProfileId, onProfileUpdated, onRequestCreateProfile }) {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const saved = getSavedValues();
   const [ageInputMode, setAgeInputMode] = useState("birthdate");
   const [ageMethodOpen, setAgeMethodOpen] = useState(false);
   const [birthDate, setBirthDate] = useState(getSavedBirthDate);
-  const [ageInDays, setAgeInDays] = useState(saved.ageInDays || "");
-  const [ageInMonths, setAgeInMonths] = useState(saved.ageInMonths || "");
-  const [weightValue, setWeightValue] = useState(saved.weight || "");
-  const [heightValue, setHeightValue] = useState(saved.height || "");
-  const [hcValue, setHcValue] = useState(saved.hc || "");
+  const [ageInDays, setAgeInDays] = useState(() => getSavedValues().ageInDays || "");
+  const [ageInMonths, setAgeInMonths] = useState(() => getSavedValues().ageInMonths || "");
+  const [weightValue, setWeightValue] = useState(() => getSavedValues().weight || "");
+  const [heightValue, setHeightValue] = useState(() => getSavedValues().height || "");
+  const [hcValue, setHcValue] = useState(() => getSavedValues().hc || "");
   const [results, setResults] = useState(null);
   const [warning, setWarning] = useState("");
   const [savedMessage, setSavedMessage] = useState(false);
@@ -316,6 +315,44 @@ export default function Calculator({ allData, gender, activeProfileId, onProfile
   const resultRef = useRef(null);
 
   const profile = activeProfileId ? getProfile(activeProfileId) : null;
+
+  // Compute percentile change alerts vs last saved measurement
+  const calcAlerts = useMemo(() => {
+    if (!profile?.measurements?.length || !results || !allData) return [];
+    const lastM = profile.measurements[profile.measurements.length - 1];
+    const alerts = [];
+    const pairs = [
+      { key: "Weight", field: "weight" },
+      { key: "Height", field: "height" },
+      { key: "Head Circumference", field: "hc" },
+    ];
+    for (const p of pairs) {
+      const r = results.find((r) => r && r.measure === p.key);
+      if (!r || !lastM[p.field] || !allData[p.key]) continue;
+      const lastDayData = allData[p.key][lastM.days];
+      if (!lastDayData) continue;
+      const lastPerc = getPercentile(lastM[p.field], lastDayData);
+      const diff = parseFloat(r.percentile) - lastPerc;
+      if (Math.abs(diff) >= 15) {
+        alerts.push({ type: diff < 0 ? "drop" : "rise", key: p.key, prev: lastPerc.toFixed(0), current: parseFloat(r.percentile).toFixed(0) });
+      }
+    }
+    return alerts;
+  }, [profile, results, allData]);
+
+  // Memoize history percentile calculations
+  const historyWithPercentiles = useMemo(() => {
+    if (!profile?.measurements || !allData) return [];
+    return profile.measurements.map((m) => {
+      const percs = [];
+      if (m.days < (allData.Weight?.length || 0)) {
+        if (m.weight) percs.push("W:" + getPercentile(m.weight, allData.Weight[m.days]).toFixed(0));
+        if (m.height) percs.push("H:" + getPercentile(m.height, allData.Height[m.days]).toFixed(0));
+        if (m.hc) percs.push("HC:" + getPercentile(m.hc, allData["Head Circumference"][m.days]).toFixed(0));
+      }
+      return { ...m, percText: percs.join(" ") };
+    });
+  }, [profile, allData]);
 
   // Persist form values to localStorage
   useEffect(() => {
@@ -832,42 +869,18 @@ export default function Calculator({ allData, gender, activeProfileId, onProfile
 
           {hasResults ? (
             <>
-              {/* Percentile change alerts vs last saved */}
-              {profile && profile.measurements && profile.measurements.length > 0 && results && (() => {
-                const lastM = profile.measurements[profile.measurements.length - 1];
-                const alerts = [];
-                const pairs = [
-                  { key: "Weight", field: "weight", label: t("measureWeight") },
-                  { key: "Height", field: "height", label: t("measureHeight") },
-                  { key: "Head Circumference", field: "hc", label: t("measureHeadCircumference") },
-                ];
-                for (const p of pairs) {
-                  const r = results.find((r) => r && r.measure === p.key);
-                  if (!r || !lastM[p.field] || !allData?.[p.key]) continue;
-                  const lastDayData = allData[p.key][lastM.days];
-                  if (!lastDayData) continue;
-                  const lastPerc = getPercentile(lastM[p.field], lastDayData);
-                  const diff = parseFloat(r.percentile) - lastPerc;
-                  if (Math.abs(diff) >= 15) {
-                    alerts.push({
-                      type: diff < 0 ? "drop" : "rise",
-                      label: p.label,
-                      prev: lastPerc.toFixed(0),
-                      current: parseFloat(r.percentile).toFixed(0),
-                    });
-                  }
-                }
-                if (alerts.length === 0) return null;
-                return (
-                  <div className="evo-alerts" style={{ marginBottom: "0.75rem" }}>
-                    {alerts.map((a, i) => (
+              {calcAlerts.length > 0 && (
+                <div className="evo-alerts" style={{ marginBottom: "0.75rem" }}>
+                  {calcAlerts.map((a, i) => {
+                    const label = a.key === "Weight" ? t("measureWeight") : a.key === "Height" ? t("measureHeight") : t("measureHeadCircumference");
+                    return (
                       <div key={i} className={`evo-alert evo-alert-${a.type}`}>
-                        {t(a.type === "drop" ? "calcAlertDrop" : "calcAlertRise", { measure: a.label, prev: a.prev, current: a.current })}
+                        {t(a.type === "drop" ? "calcAlertDrop" : "calcAlertRise", { measure: label, prev: a.prev, current: a.current })}
                       </div>
-                    ))}
-                  </div>
-                );
-              })()}
+                    );
+                  })}
+                </div>
+              )}
 
               <PercentileInterpretation results={results} gender={gender} t={t} />
 
@@ -929,17 +942,8 @@ export default function Calculator({ allData, gender, activeProfileId, onProfile
                     </tr>
                   </thead>
                   <tbody>
-                    {profile.measurements.map((m) => {
-                      // Calculate percentiles for this measurement
-                      const percs = [];
-                      if (allData && m.days < (allData.Weight?.length || 0)) {
-                        if (m.weight) percs.push("W:" + getPercentile(m.weight, allData.Weight[m.days]).toFixed(0));
-                        if (m.height) percs.push("H:" + getPercentile(m.height, allData.Height[m.days]).toFixed(0));
-                        if (m.hc) percs.push("HC:" + getPercentile(m.hc, allData["Head Circumference"][m.days]).toFixed(0));
-                      }
-                      const percText = percs.join(" ");
-
-                      return editingMeasurement === m.id ? (
+                    {historyWithPercentiles.map((m) =>
+                      editingMeasurement === m.id ? (
                         <tr key={m.id} className="history-row-edit">
                           <td><input type="date" className="history-edit-input" value={editValues.date} onChange={(e) => setEditValues({ ...editValues, date: e.target.value })} /></td>
                           <td><input type="number" className="history-edit-input" value={editValues.days} onChange={(e) => setEditValues({ ...editValues, days: e.target.value })} /></td>
@@ -959,14 +963,14 @@ export default function Calculator({ allData, gender, activeProfileId, onProfile
                           <td>{m.weight ?? "—"}</td>
                           <td>{m.height ?? "—"}</td>
                           <td>{m.hc ?? "—"}</td>
-                          <td className="history-percs">{percText || "—"}</td>
+                          <td className="history-percs">{m.percText || "—"}</td>
                           <td className="history-actions">
                             <button className="history-action-btn" onClick={() => handleStartEdit(m)} title={t("historyEdit")}><EditIcon /></button>
                             <button className="history-action-btn delete" onClick={() => handleDeleteMeasurement(m.id)} title={t("historyDelete")}><TrashIcon /></button>
                           </td>
                         </tr>
-                      );
-                    })}
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>

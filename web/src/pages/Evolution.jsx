@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Plot from "react-plotly.js";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS, MEASURES_INPUT } from "../utils/data";
@@ -142,10 +142,18 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
   const profile = activeProfileId ? getProfile(activeProfileId) : null;
   const hasHistory = profile && profile.measurements && profile.measurements.length > 0;
 
-  // Auto-select history if available and no file uploaded
   const [dataSource, setDataSource] = useState(() =>
     hasHistory ? "history" : "file"
   );
+
+  // Sync dataSource when profile changes
+  useEffect(() => {
+    if (hasHistory && !babyData) {
+      setDataSource("history");
+    } else if (!hasHistory && dataSource === "history") {
+      setDataSource("file");
+    }
+  }, [activeProfileId]);
 
   // Build baby data from history
   const historyData = useMemo(() => {
