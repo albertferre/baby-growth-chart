@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Plot from "react-plotly.js";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS, MEASURES_INPUT } from "../utils/data";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getProfile } from "../utils/babyStore";
 import SEOHead from "../components/SEOHead";
 
 function linearInterpolate(arr) {
@@ -89,6 +90,16 @@ function InfoIcon() {
   );
 }
 
+function AlertTriangleIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
 function getPlotlyLayoutBase() {
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
   return {
@@ -116,16 +127,46 @@ function getPlotlyLayoutBase() {
   };
 }
 
-export default function Evolution({ data, measure, gender }) {
+export default function Evolution({ data, measure, gender, activeProfileId }) {
   const { t } = useLanguage();
   const [babyData, setBabyData] = useState(null);
   const [fileName, setFileName] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [showHelp, setShowHelp] = useState(false);
+  const plotRef = useRef(null);
 
   const col = MEASURES_INPUT[measure];
   const unit = MEASURES_UNITS[measure];
   const accentColor = gender === "Girls" ? "#ec4899" : "#3b82f6";
+
+  const profile = activeProfileId ? getProfile(activeProfileId) : null;
+  const hasHistory = profile && profile.measurements && profile.measurements.length > 0;
+
+  const [dataSource, setDataSource] = useState(() =>
+    hasHistory ? "history" : "file"
+  );
+
+  // Sync dataSource when profile changes
+  useEffect(() => {
+    if (hasHistory && !babyData) {
+      setDataSource("history");
+    } else if (!hasHistory && dataSource === "history") {
+      setDataSource("file");
+    }
+  }, [activeProfileId]);
+
+  // Build baby data from history
+  const historyData = useMemo(() => {
+    if (!profile || !profile.measurements || profile.measurements.length === 0) return null;
+    const colMap = { Weight: "weight", Height: "height", "Head Circumference": "hc" };
+    const field = colMap[measure];
+    return profile.measurements
+      .filter((m) => m[field] != null)
+      .map((m) => ({ day: m.days, value: m[field] }))
+      .sort((a, b) => a.day - b.day);
+  }, [profile, measure]);
+
+  const effectiveData = dataSource === "history" ? historyData : babyData;
 
   // Translate measure and gender
   const getMeasureLabel = () => {
@@ -155,6 +196,7 @@ export default function Evolution({ data, measure, gender }) {
     const file = e.target.files[0];
     if (!file) return;
     setUploadError("");
+    setDataSource("file");
 
     try {
       const rows = await parseExcel(file);
@@ -186,6 +228,26 @@ export default function Evolution({ data, measure, gender }) {
     setBabyData(null);
     setFileName("");
     setUploadError("");
+    setDataSource("file");
+  }
+
+  function handleUseHistory() {
+    setDataSource("history");
+    setBabyData(null);
+    setFileName("");
+  }
+
+  async function exportChart() {
+    if (!plotRef.current) return;
+    const Plotly = await import("plotly.js");
+    const gd = plotRef.current.el;
+    if (!gd) return;
+    Plotly.downloadImage(gd, {
+      format: "png",
+      width: 1200,
+      height: 600,
+      filename: `growth-evolution-${measure.toLowerCase()}`,
+    });
   }
 
   const percentileCurves = useMemo(() => {
@@ -201,14 +263,34 @@ export default function Evolution({ data, measure, gender }) {
   }, [data]);
 
   const babyPercentiles = useMemo(() => {
-    if (!babyData) return null;
-    return babyData
+    if (!effectiveData || effectiveData.length === 0) return null;
+    return effectiveData
       .filter((r) => r.day >= 0 && r.day < data.length)
       .map((r) => ({
         day: r.day,
         percentile: getPercentile(r.value, data[r.day]),
       }));
-  }, [babyData, data]);
+  }, [effectiveData, data]);
+
+  // Detect significant percentile changes (alerts)
+  const alerts = useMemo(() => {
+    if (!babyPercentiles || babyPercentiles.length < 2) return [];
+    const result = [];
+    for (let i = 1; i < babyPercentiles.length; i++) {
+      const prev = babyPercentiles[i - 1].percentile;
+      const curr = babyPercentiles[i].percentile;
+      const diff = curr - prev;
+      if (Math.abs(diff) >= 20) {
+        result.push({
+          type: diff < 0 ? "drop" : "rise",
+          prev: prev.toFixed(0),
+          current: curr.toFixed(0),
+          day: babyPercentiles[i].day,
+        });
+      }
+    }
+    return result;
+  }, [babyPercentiles]);
 
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
   const pCurveStyles = {
@@ -229,11 +311,11 @@ export default function Evolution({ data, measure, gender }) {
     hovertemplate: `${key}: %{y:.1f} ${unit}<extra></extra>`,
   }));
 
-  if (babyData) {
+  if (effectiveData && effectiveData.length > 0) {
     traces.push({
-      x: babyData.map((r) => r.day),
-      y: babyData.map((r) => r.value),
-      name: t("evoBaby"),
+      x: effectiveData.map((r) => r.day),
+      y: effectiveData.map((r) => r.value),
+      name: profile ? profile.name : t("evoBaby"),
       type: "scatter",
       mode: "lines+markers",
       line: { color: accentColor, width: 2.5 },
@@ -256,103 +338,135 @@ export default function Evolution({ data, measure, gender }) {
         </div>
 
         <div className="upload-actions">
-          <div className="upload-section">
-            <div className={`dropzone ${fileName ? "has-file" : ""}`}>
-              <input type="file" accept=".xls,.xlsx" onChange={handleFileUpload} />
-              {fileName ? <CheckIcon /> : <UploadIcon />}
-              <span className="dropzone-text">
-                {fileName ? (
-                  fileName
-                ) : (
-                  <>
-                    <strong>{t("evoUpload")}</strong> {t("evoUploadHint")}
-                  </>
-                )}
-              </span>
-            </div>
-            {fileName && (
-              <button className="btn-clear" onClick={handleClearData} title="Clear data">
-                &times;
+          {hasHistory && (
+            <div className="data-source-toggle">
+              <span className="data-source-label">{t("evoDataSource")}:</span>
+              <button
+                className={`data-source-btn ${dataSource === "file" ? "active" : ""}`}
+                onClick={() => { setDataSource("file"); }}
+              >
+                {t("evoSourceFile")}
               </button>
-            )}
-          </div>
-          <button className="btn-template" onClick={downloadTemplate}>
-            <DownloadIcon /> {t("evoDownloadTemplate")}
-          </button>
+              <button
+                className={`data-source-btn ${dataSource === "history" ? "active" : ""}`}
+                onClick={handleUseHistory}
+              >
+                {t("evoSourceHistory")} ({profile.measurements.length})
+              </button>
+            </div>
+          )}
+
+          {dataSource === "file" && (
+            <>
+              <div className="upload-section">
+                <div className={`dropzone ${fileName ? "has-file" : ""}`}>
+                  <input type="file" accept=".xls,.xlsx" onChange={handleFileUpload} />
+                  {fileName ? <CheckIcon /> : <UploadIcon />}
+                  <span className="dropzone-text">
+                    {fileName ? (
+                      fileName
+                    ) : (
+                      <>
+                        <strong>{t("evoUpload")}</strong> {t("evoUploadHint")}
+                      </>
+                    )}
+                  </span>
+                </div>
+                {fileName && (
+                  <button className="btn-clear" onClick={handleClearData} title="Clear data">
+                    &times;
+                  </button>
+                )}
+              </div>
+              <button className="btn-template" onClick={downloadTemplate}>
+                <DownloadIcon /> {t("evoDownloadTemplate")}
+              </button>
+            </>
+          )}
+
+          {dataSource === "history" && !hasHistory && (
+            <div className="evo-no-history">
+              <p>{t("evoNoHistory")}</p>
+            </div>
+          )}
         </div>
       </div>
 
-      <button
-        className="help-toggle"
-        onClick={() => setShowHelp(!showHelp)}
-        aria-expanded={showHelp}
-      >
-        <InfoIcon />
-        <span>{showHelp ? t("evoHelpHide") : t("evoHelpToggle")}</span>
-      </button>
+      {dataSource === "file" && (
+        <>
+          <button
+            className="help-toggle"
+            onClick={() => setShowHelp(!showHelp)}
+            aria-expanded={showHelp}
+          >
+            <InfoIcon />
+            <span>{showHelp ? t("evoHelpHide") : t("evoHelpToggle")}</span>
+          </button>
 
-      {showHelp && (
-        <div className="help-panel">
-          <h3>{t("evoHelpTitle")}</h3>
-          <p dangerouslySetInnerHTML={{ __html: t("evoHelpIntro") }} />
+          {showHelp && (
+            <div className="help-panel">
+              <h3>{t("evoHelpTitle")}</h3>
+              <p dangerouslySetInnerHTML={{ __html: t("evoHelpIntro") }} />
 
-          <table className="help-table">
-            <thead>
-              <tr>
-                <th>{t("evoHelpColColumn")}</th>
-                <th>{t("evoHelpColDesc")}</th>
-                <th>{t("evoHelpColExample")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><code>day</code></td>
-                <td>{t("evoHelpDayDesc")}</td>
-                <td>0, 30, 60, 90...</td>
-              </tr>
-              <tr>
-                <td><code>w</code></td>
-                <td>{t("evoHelpWeightDesc")}</td>
-                <td>3.2, 4.5, 5.8...</td>
-              </tr>
-              <tr>
-                <td><code>h</code></td>
-                <td>{t("evoHelpHeightDesc")}</td>
-                <td>50, 54, 58...</td>
-              </tr>
-              <tr>
-                <td><code>hc</code></td>
-                <td>{t("evoHelpHcDesc")}</td>
-                <td>35, 37, 39...</td>
-              </tr>
-            </tbody>
-          </table>
+              <table className="help-table">
+                <thead>
+                  <tr>
+                    <th>{t("evoHelpColColumn")}</th>
+                    <th>{t("evoHelpColDesc")}</th>
+                    <th>{t("evoHelpColExample")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>day</code></td>
+                    <td>{t("evoHelpDayDesc")}</td>
+                    <td>0, 30, 60, 90...</td>
+                  </tr>
+                  <tr>
+                    <td><code>w</code></td>
+                    <td>{t("evoHelpWeightDesc")}</td>
+                    <td>3.2, 4.5, 5.8...</td>
+                  </tr>
+                  <tr>
+                    <td><code>h</code></td>
+                    <td>{t("evoHelpHeightDesc")}</td>
+                    <td>50, 54, 58...</td>
+                  </tr>
+                  <tr>
+                    <td><code>hc</code></td>
+                    <td>{t("evoHelpHcDesc")}</td>
+                    <td>35, 37, 39...</td>
+                  </tr>
+                </tbody>
+              </table>
 
-          <h4>{t("evoHelpExample")}</h4>
-          <div className="help-example">
-            <table>
-              <thead>
-                <tr><th>day</th><th>w</th><th>h</th><th>hc</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>0</td><td>3.2</td><td>50</td><td>35</td></tr>
-                <tr><td>30</td><td>4.1</td><td>54</td><td>37</td></tr>
-                <tr><td>60</td><td>5.0</td><td>58</td><td>39</td></tr>
-                <tr><td>90</td><td>5.8</td><td>61</td><td>40</td></tr>
-              </tbody>
-            </table>
-          </div>
+              <h4>{t("evoHelpExample")}</h4>
+              <div className="help-example">
+                <table>
+                  <thead>
+                    <tr><th>day</th><th>w</th><th>h</th><th>hc</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>0</td><td>3.2</td><td>50</td><td>35</td></tr>
+                    <tr><td>30</td><td>4.1</td><td>54</td><td>37</td></tr>
+                    <tr><td>60</td><td>5.0</td><td>58</td><td>39</td></tr>
+                    <tr><td>90</td><td>5.8</td><td>61</td><td>40</td></tr>
+                  </tbody>
+                </table>
+              </div>
 
-          <div className="help-tips">
-            <h4>{t("evoHelpTips")}</h4>
-            <ul>
-              <li dangerouslySetInnerHTML={{ __html: t("evoHelpTip1") }} />
-              <li>{t("evoHelpTip2")}</li>
-              <li>{t("evoHelpTip3")}</li>
-              <li dangerouslySetInnerHTML={{ __html: t("evoHelpTip4") }} />
-            </ul>
-          </div>
-        </div>
+              <div className="help-tips">
+                <h4>{t("evoHelpTips")}</h4>
+                <ul>
+                  <li dangerouslySetInnerHTML={{ __html: t("evoHelpTip1") }} />
+                  <li>{t("evoHelpTip2")}</li>
+                  <li>{t("evoHelpTip3")}</li>
+                  <li dangerouslySetInnerHTML={{ __html: t("evoHelpTip4") }} />
+                </ul>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {uploadError && (
@@ -362,8 +476,32 @@ export default function Evolution({ data, measure, gender }) {
         </div>
       )}
 
+      {/* Alerts for significant percentile changes */}
+      {alerts.length > 0 && (
+        <div className="evo-alerts">
+          <div className="evo-alerts-title">
+            <AlertTriangleIcon />
+            <span>{t("alertDropTitle")}</span>
+          </div>
+          {alerts.map((a, i) => (
+            <div key={i} className={`evo-alert evo-alert-${a.type}`}>
+              {a.type === "drop"
+                ? t("alertDrop", { measure: getMeasureLabel(), prev: a.prev, current: a.current })
+                : t("alertRise", { measure: getMeasureLabel(), prev: a.prev, current: a.current })}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="plot-card">
+        {(effectiveData && effectiveData.length > 0) && (
+          <button className="btn-export-chart" onClick={exportChart} title={t("evoExportChart")}>
+            <DownloadIcon />
+            <span>{t("evoExportChart")}</span>
+          </button>
+        )}
         <Plot
+          ref={plotRef}
           data={traces}
           layout={{
             ...getPlotlyLayoutBase(),

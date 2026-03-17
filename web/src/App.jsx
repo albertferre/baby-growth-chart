@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { BrowserRouter, Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { loadData } from "./utils/data";
 import { LanguageProvider, useLanguage } from "./i18n/LanguageContext";
 import { LANGUAGES } from "./i18n/translations";
+import { getProfiles, createProfile, deleteProfile, getActiveProfileId, setActiveProfileId, getProfile } from "./utils/babyStore";
 import Calculator from "./pages/Calculator";
 import Evolution from "./pages/Evolution";
 import UserManual from "./pages/UserManual";
@@ -129,13 +130,85 @@ function GlobeIcon() {
   );
 }
 
+function BabyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="5" />
+      <path d="M20 21a8 8 0 0 0-16 0" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
 function AppContent() {
   const { t, language, setLanguage } = useLanguage();
+  const location = useLocation();
+  const isCalculator = location.pathname === "/";
+  const isManual = location.pathname === "/manual";
+  const showSettings = !isCalculator && !isManual;
   const [measure, setMeasure] = useState("Weight");
   const [gender, setGender] = useState("Boys");
   const [data, setData] = useState(null);
   const [allData, setAllData] = useState(null);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [profiles, setProfiles] = useState(() => getProfiles());
+  const [activeProfileId, setActiveProfile] = useState(() => getActiveProfileId());
+  const [showProfileForm, setShowProfileForm] = useState(false);
+  const [newProfileName, setNewProfileName] = useState("");
+
+  const refreshProfiles = useCallback(() => {
+    setProfiles(getProfiles());
+  }, []);
+
+  const handleCreateProfile = () => {
+    if (!newProfileName.trim()) return;
+    const p = createProfile(newProfileName.trim(), gender);
+    setActiveProfile(p.id);
+    setActiveProfileId(p.id);
+    setNewProfileName("");
+    setShowProfileForm(false);
+    refreshProfiles();
+  };
+
+  const handleDeleteProfile = (id) => {
+    const p = getProfile(id);
+    if (p && window.confirm(t("profileDeleteConfirm", { name: p.name }))) {
+      deleteProfile(id);
+      if (activeProfileId === id) {
+        const remaining = getProfiles();
+        const newId = remaining.length > 0 ? remaining[0].id : null;
+        setActiveProfile(newId);
+        setActiveProfileId(newId);
+      }
+      refreshProfiles();
+    }
+  };
+
+  const handleSelectProfile = (id) => {
+    setActiveProfile(id);
+    setActiveProfileId(id);
+    // Sync gender from profile
+    const p = getProfile(id);
+    if (p && p.gender) setGender(p.gender);
+  };
+
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem("baby-growth-theme") || "light";
@@ -225,25 +298,27 @@ function AppContent() {
           </NavLink>
         </nav>
 
-        <div className="sidebar-settings">
+        {!isManual && <div className="sidebar-settings">
           <div className="sidebar-settings-header">
             <span>{t("labelSettings")}</span>
           </div>
           <div className="sidebar-settings-content">
-            <div className="sidebar-section" data-coach="metric">
-              <span className="sidebar-section-label"><RulerIcon /> {t("labelMetric")}</span>
-              <div className="metric-toggle">
-                {MEASURES.map((m) => (
-                  <button
-                    key={m}
-                    className={measure === m ? "active" : ""}
-                    onClick={() => setMeasure(m)}
-                  >
-                    {getMeasureLabel(m)}
-                  </button>
-                ))}
+            {showSettings && (
+              <div className="sidebar-section" data-coach="metric">
+                <span className="sidebar-section-label"><RulerIcon /> {t("labelMetric")}</span>
+                <div className="metric-toggle">
+                  {MEASURES.map((m) => (
+                    <button
+                      key={m}
+                      className={measure === m ? "active" : ""}
+                      onClick={() => setMeasure(m)}
+                    >
+                      {getMeasureLabel(m)}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="sidebar-section">
               <span className="sidebar-section-label"><GenderIcon /> {t("labelGender")}</span>
@@ -259,8 +334,36 @@ function AppContent() {
                 ))}
               </div>
             </div>
+            <div className="sidebar-section">
+              <span className="sidebar-section-label"><BabyIcon /> {t("profileLabel")}</span>
+              <div className="profile-list">
+                {profiles.map((p) => (
+                  <div key={p.id} className={`profile-item ${activeProfileId === p.id ? "active" : ""}`}>
+                    <button
+                      className="profile-item-btn"
+                      onClick={() => handleSelectProfile(p.id)}
+                    >
+                      <span className="profile-item-name">{p.name}</span>
+                      <span className="profile-item-count">
+                        {t("profileMeasurements", { count: p.measurements?.length || 0 })}
+                      </span>
+                    </button>
+                    <button
+                      className="profile-item-delete"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteProfile(p.id); }}
+                      title={t("profileDelete")}
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                ))}
+                <button className="profile-add-btn" onClick={() => setShowProfileForm(true)}>
+                  <PlusIcon /> {t("profileAdd")}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </div>}
 
         <div className="medical-disclaimer">
           <div className="medical-disclaimer-icon">
@@ -344,19 +447,21 @@ function AppContent() {
             )}
           </div>
         </div>
-        <div className="mobile-settings">
+        {!isManual && <div className="mobile-settings">
           <div className="mobile-settings-row">
-            <div className="metric-toggle">
-              {MEASURES.map((m) => (
-                <button
-                  key={m}
-                  className={measure === m ? "active" : ""}
-                  onClick={() => setMeasure(m)}
-                >
-                  {getMeasureLabel(m)}
-                </button>
-              ))}
-            </div>
+            {showSettings && (
+              <div className="metric-toggle">
+                {MEASURES.map((m) => (
+                  <button
+                    key={m}
+                    className={measure === m ? "active" : ""}
+                    onClick={() => setMeasure(m)}
+                  >
+                    {getMeasureLabel(m)}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="gender-toggle">
               {GENDERS.map((g) => (
                 <button
@@ -368,19 +473,39 @@ function AppContent() {
                 </button>
               ))}
             </div>
+            <div className="mobile-profile-selector">
+              <BabyIcon />
+              {profiles.length > 0 ? (
+                <select
+                  value={activeProfileId || ""}
+                  onChange={(e) => handleSelectProfile(e.target.value)}
+                  className="mobile-profile-select"
+                >
+                  <option value="">{t("profileLabel")}</option>
+                  {profiles.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <span className="mobile-profile-empty">{t("profileNoProfiles")}</span>
+              )}
+              <button className="mobile-profile-add" onClick={() => setShowProfileForm(true)} title={t("profileAdd")}>
+                <PlusIcon />
+              </button>
+            </div>
           </div>
-        </div>
+        </div>}
 
         {data ? (
           <Routes>
             <Route
               path="/"
-              element={<Calculator allData={allData} gender={gender} />}
+              element={<Calculator allData={allData} gender={gender} activeProfileId={activeProfileId} onProfileUpdated={refreshProfiles} onRequestCreateProfile={() => setShowProfileForm(true)} />}
             />
             <Route
               path="/evolution"
               element={
-                <Evolution data={data} measure={measure} gender={gender} />
+                <Evolution data={data} measure={measure} gender={gender} activeProfileId={activeProfileId} />
               }
             />
             <Route path="/manual" element={<UserManual />} />
@@ -391,7 +516,56 @@ function AppContent() {
             {t("loading")}
           </div>
         )}
+
+        <div className="mobile-footer">
+          <div className="data-source">
+            {t("dataSource")}{" "}
+            <a
+              href="https://www.who.int/tools/child-growth-standards/standards"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t("dataSourceLink")}
+            </a>
+          </div>
+          <div className="github-signature">
+            <a
+              href="https://github.com/albertferre"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GitHubIcon />
+              <span>Made by albertferre</span>
+            </a>
+          </div>
+        </div>
       </main>
+
+      {/* Profile creation modal */}
+      {showProfileForm && (
+        <div className="modal-backdrop" onClick={() => { setShowProfileForm(false); setNewProfileName(""); }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{t("profileAdd")}</h3>
+            <input
+              type="text"
+              className="profile-form-input"
+              placeholder={t("profileNamePlaceholder")}
+              value={newProfileName}
+              onChange={(e) => setNewProfileName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreateProfile()}
+              autoFocus
+            />
+            <div className="profile-form-actions">
+              <button className="profile-form-btn create" onClick={handleCreateProfile}>
+                {t("profileCreate")}
+              </button>
+              <button className="profile-form-btn cancel" onClick={() => { setShowProfileForm(false); setNewProfileName(""); }}>
+                {t("profileCancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
