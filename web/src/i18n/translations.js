@@ -63,6 +63,85 @@ export const translations = {
     calcWarnAtLeastOne: "Please enter at least one measurement (weight, height, or head circumference).",
     calcWarnAgeExceeds: "The age exceeds the supported range (0–5 years). Cannot calculate percentile.",
 
+    // Percentile interpretation
+    interpVeryLow: "Well below average",
+    interpLow: "Below average",
+    interpNormal: "Within normal range",
+    interpHigh: "Above average",
+    interpVeryHigh: "Well above average",
+    interpDesc: "Your baby is above {percentile} of {genderLabel} of the same age",
+    interpZoneVeryLow: "Very low",
+    interpZoneLow: "Low",
+    interpZoneNormal: "Normal",
+    interpZoneHigh: "High",
+    interpZoneVeryHigh: "Very high",
+    summaryAllNormal: "Great news! All measurements are within the normal range. Your baby is growing well.",
+    summaryMostlyNormal: "Most measurements are within normal range. Keep up the regular check-ups with your pediatrician.",
+    summarySomeConcern: "Some measurements are outside the typical range. Consider discussing this with your pediatrician at your next visit.",
+    summaryConsultDoctor: "Some measurements need attention. We recommend consulting your pediatrician.",
+
+    // Baby profiles
+    profileLabel: "Baby",
+    profileAdd: "Add baby",
+    profileName: "Baby's name",
+    profileNamePlaceholder: "e.g. Emma",
+    profileCreate: "Create",
+    profileCancel: "Cancel",
+    profileDelete: "Delete profile",
+    profileDeleteConfirm: "Delete \"{name}\" and all their measurements?",
+    profileNoProfiles: "No profiles yet",
+    profileSaved: "Measurement saved!",
+    profileSaveToHistory: "Save",
+    profileMeasurements: "{count} measurements",
+    profileResultsFor: "Results for {name}",
+
+    // History & Evolution integration
+    historyTitle: "Measurement History",
+    historyEmpty: "No measurements saved yet. Use the calculator to add measurements.",
+    historyDate: "Date",
+    historyAge: "Age",
+    historyDelete: "Delete",
+    historyEdit: "Edit",
+    historyEditSave: "Save",
+    historyEditCancel: "Cancel",
+    historyDays: "d",
+    historyUseInEvolution: "View evolution",
+    evoSourceFile: "Excel file",
+    evoSourceHistory: "Saved history",
+    evoDataSource: "Data source",
+    evoNoHistory: "No measurements saved for this baby. Use the calculator to add measurements.",
+
+    // Save dialog
+    saveMeasurementDate: "Measurement date",
+    saveMeasurementDateHint: "When was this measurement taken?",
+
+    // Share
+    shareResult: "Share",
+    shareCopied: "Copied!",
+
+    // Onboarding
+    onboardingCreateProfile: "Create a profile to save your baby's measurements and track their evolution.",
+    onboardingCreate: "Create profile",
+
+    // After save
+    savedViewEvolution: "View evolution",
+
+    // History export
+    historyExport: "Export Excel",
+    historyPercentile: "Percentile",
+
+    // Calculator alerts (comparison with last saved)
+    calcAlertDrop: "{measure} has dropped from P{prev} to P{current} since last measurement.",
+    calcAlertRise: "{measure} has risen from P{prev} to P{current} since last measurement.",
+
+    // Alerts
+    alertDropTitle: "Percentile change detected",
+    alertDrop: "{measure} has dropped from P{prev} to P{current}. Consider consulting your pediatrician.",
+    alertRise: "{measure} has risen from P{prev} to P{current}.",
+
+    // Evolution export
+    evoExportChart: "Export chart",
+
     // Evolution
     evoTitle: "{measure} Evolution",
     evoSubtitle: "WHO percentile curves for {gender}",
@@ -105,27 +184,27 @@ export const translations = {
     coachWelcomeTitle: "Welcome!",
     coachWelcomeText: "This app helps you track your baby's growth using WHO standards. Let's take a quick tour!",
     coachNavTitle: "Navigation",
-    coachNavText: "Use these links to switch between the Calculator (single measurement), Evolution (charts over time), and User Manual.",
+    coachNavText: "Use these links to switch between the Calculator (all 3 measurements at once), Evolution (charts over time), and User Manual.",
     coachMetricTitle: "Choose a Metric",
-    coachMetricText: "Select what you want to measure: Weight, Height, or Head Circumference.",
+    coachMetricText: "Select the metric to display on the Evolution chart: Weight, Height, or Head Circumference.",
     coachGenderTitle: "Select Gender",
     coachGenderText: "WHO growth charts differ by gender. Select your baby's gender here.",
     coachLanguageTitle: "Language",
-    coachLanguageText: "You can switch between English and Spanish at any time.",
+    coachLanguageText: "You can switch between English, Spanish, and Catalan at any time.",
     coachAgeInputTitle: "Age Input",
     coachAgeInputText: "Choose how to enter the baby's age: birth date (saved automatically), days, or months.",
-    coachMeasurementTitle: "Measurement",
-    coachMeasurementText: "Enter the measurement value here. The unit depends on the metric you selected.",
+    coachMeasurementTitle: "Measurements",
+    coachMeasurementText: "Enter weight, height, and/or head circumference. You can fill in any combination.",
     coachCalculateTitle: "Calculate",
-    coachCalculateText: "Click here to calculate the percentile based on WHO growth standards.",
+    coachCalculateText: "Click here to calculate the percentiles based on WHO growth standards.",
     coachResultTitle: "Results",
-    coachResultText: "The percentile result will appear here with a visual indicator showing where your baby stands.",
+    coachResultText: "Results will appear here with color-coded zone bars showing where your baby stands for each measurement.",
     coachUploadTitle: "Upload Data",
-    coachUploadText: "Upload an Excel file with your baby's measurements over time to see the growth evolution.",
+    coachUploadText: "Upload an Excel file or use your saved measurement history to see the growth evolution.",
     coachHelpTitle: "File Format Help",
     coachHelpText: "Click here to see detailed instructions on how to prepare your Excel file.",
     coachChartTitle: "Growth Chart",
-    coachChartText: "This chart shows WHO percentile curves. Your baby's data will be overlaid when you upload a file.",
+    coachChartText: "This chart shows WHO percentile curves. Your baby's data will be overlaid when you upload a file or use saved history.",
     coachDisclaimerTitle: "Important",
     coachDisclaimerText: "Remember: this tool is for reference only. Always consult your pediatrician for medical advice.",
   },
@@ -194,6 +273,85 @@ export const translations = {
     calcWarnAtLeastOne: "Por favor, introduce al menos una medida (peso, altura o perímetro craneal).",
     calcWarnAgeExceeds: "La edad supera el rango soportado (0–5 años). No se puede calcular el percentil.",
 
+    // Percentile interpretation
+    interpVeryLow: "Muy por debajo de la media",
+    interpLow: "Por debajo de la media",
+    interpNormal: "Dentro del rango normal",
+    interpHigh: "Por encima de la media",
+    interpVeryHigh: "Muy por encima de la media",
+    interpDesc: "Tu bebé está por encima del {percentile} de {genderLabel} de su misma edad",
+    interpZoneVeryLow: "Muy bajo",
+    interpZoneLow: "Bajo",
+    interpZoneNormal: "Normal",
+    interpZoneHigh: "Alto",
+    interpZoneVeryHigh: "Muy alto",
+    summaryAllNormal: "¡Buenas noticias! Todas las medidas están dentro del rango normal. Tu bebé crece bien.",
+    summaryMostlyNormal: "La mayoría de medidas están en el rango normal. Sigue con las revisiones habituales con tu pediatra.",
+    summarySomeConcern: "Algunas medidas están fuera del rango típico. Considera comentarlo con tu pediatra en la próxima visita.",
+    summaryConsultDoctor: "Algunas medidas necesitan atención. Te recomendamos consultar con tu pediatra.",
+
+    // Baby profiles
+    profileLabel: "Bebé",
+    profileAdd: "Añadir bebé",
+    profileName: "Nombre del bebé",
+    profileNamePlaceholder: "ej. Emma",
+    profileCreate: "Crear",
+    profileCancel: "Cancelar",
+    profileDelete: "Eliminar perfil",
+    profileDeleteConfirm: "¿Eliminar \"{name}\" y todas sus medidas?",
+    profileNoProfiles: "Sin perfiles todavía",
+    profileSaved: "¡Medida guardada!",
+    profileSaveToHistory: "Guardar",
+    profileMeasurements: "{count} medidas",
+    profileResultsFor: "Resultados de {name}",
+
+    // History & Evolution integration
+    historyTitle: "Historial de Medidas",
+    historyEmpty: "No hay medidas guardadas. Usa la calculadora para añadir medidas.",
+    historyDate: "Fecha",
+    historyAge: "Edad",
+    historyDelete: "Eliminar",
+    historyEdit: "Editar",
+    historyEditSave: "Guardar",
+    historyEditCancel: "Cancelar",
+    historyDays: "d",
+    historyUseInEvolution: "Ver evolución",
+    evoSourceFile: "Archivo Excel",
+    evoSourceHistory: "Historial guardado",
+    evoDataSource: "Fuente de datos",
+    evoNoHistory: "No hay medidas guardadas para este bebé. Usa la calculadora para añadir medidas.",
+
+    // Save dialog
+    saveMeasurementDate: "Fecha de la medida",
+    saveMeasurementDateHint: "¿Cuándo se tomó esta medida?",
+
+    // Share
+    shareResult: "Compartir",
+    shareCopied: "¡Copiado!",
+
+    // Onboarding
+    onboardingCreateProfile: "Crea un perfil para guardar las medidas de tu bebé y seguir su evolución.",
+    onboardingCreate: "Crear perfil",
+
+    // After save
+    savedViewEvolution: "Ver evolución",
+
+    // History export
+    historyExport: "Exportar Excel",
+    historyPercentile: "Percentil",
+
+    // Calculator alerts
+    calcAlertDrop: "{measure} ha bajado de P{prev} a P{current} desde la última medida.",
+    calcAlertRise: "{measure} ha subido de P{prev} a P{current} desde la última medida.",
+
+    // Alerts
+    alertDropTitle: "Cambio de percentil detectado",
+    alertDrop: "{measure} ha bajado de P{prev} a P{current}. Considera consultar con tu pediatra.",
+    alertRise: "{measure} ha subido de P{prev} a P{current}.",
+
+    // Evolution export
+    evoExportChart: "Exportar gráfico",
+
     // Evolution
     evoTitle: "Evolución de {measure}",
     evoSubtitle: "Curvas de percentiles OMS para {gender}",
@@ -236,27 +394,27 @@ export const translations = {
     coachWelcomeTitle: "¡Bienvenido!",
     coachWelcomeText: "Esta app te ayuda a seguir el crecimiento de tu bebé usando los estándares de la OMS. ¡Hagamos un tour rápido!",
     coachNavTitle: "Navegación",
-    coachNavText: "Usa estos enlaces para cambiar entre la Calculadora (medida individual), Evolución (gráficos en el tiempo) y Manual de Usuario.",
+    coachNavText: "Usa estos enlaces para cambiar entre la Calculadora (las 3 medidas a la vez), Evolución (gráficos en el tiempo) y Manual de Usuario.",
     coachMetricTitle: "Elige una Métrica",
-    coachMetricText: "Selecciona qué quieres medir: Peso, Altura o Perímetro Craneal.",
+    coachMetricText: "Selecciona la métrica a mostrar en el gráfico de Evolución: Peso, Altura o Perímetro Craneal.",
     coachGenderTitle: "Selecciona el Sexo",
     coachGenderText: "Las curvas de crecimiento de la OMS varían según el sexo. Selecciona el sexo de tu bebé aquí.",
     coachLanguageTitle: "Idioma",
-    coachLanguageText: "Puedes cambiar entre inglés y español en cualquier momento.",
+    coachLanguageText: "Puedes cambiar entre inglés, español y catalán en cualquier momento.",
     coachAgeInputTitle: "Entrada de Edad",
     coachAgeInputText: "Elige cómo introducir la edad del bebé: fecha de nacimiento (se guarda automáticamente), días o meses.",
-    coachMeasurementTitle: "Medida",
-    coachMeasurementText: "Introduce el valor de la medida aquí. La unidad depende de la métrica seleccionada.",
+    coachMeasurementTitle: "Medidas",
+    coachMeasurementText: "Introduce peso, altura y/o perímetro craneal. Puedes rellenar cualquier combinación.",
     coachCalculateTitle: "Calcular",
-    coachCalculateText: "Haz clic aquí para calcular el percentil basado en los estándares de crecimiento de la OMS.",
+    coachCalculateText: "Haz clic aquí para calcular los percentiles basados en los estándares de crecimiento de la OMS.",
     coachResultTitle: "Resultados",
-    coachResultText: "El resultado del percentil aparecerá aquí con un indicador visual que muestra la posición de tu bebé.",
+    coachResultText: "Los resultados aparecerán aquí con barras de zona que muestran la posición de tu bebé para cada medida.",
     coachUploadTitle: "Subir Datos",
-    coachUploadText: "Sube un archivo Excel con las medidas de tu bebé a lo largo del tiempo para ver la evolución del crecimiento.",
+    coachUploadText: "Sube un archivo Excel o usa el historial de medidas guardadas para ver la evolución del crecimiento.",
     coachHelpTitle: "Ayuda de Formato",
     coachHelpText: "Haz clic aquí para ver instrucciones detalladas sobre cómo preparar tu archivo Excel.",
     coachChartTitle: "Gráfico de Crecimiento",
-    coachChartText: "Este gráfico muestra las curvas de percentiles de la OMS. Los datos de tu bebé se superpondrán cuando subas un archivo.",
+    coachChartText: "Este gráfico muestra las curvas de percentiles de la OMS. Los datos de tu bebé se superpondrán cuando subas un archivo o uses el historial guardado.",
     coachDisclaimerTitle: "Importante",
     coachDisclaimerText: "Recuerda: esta herramienta es solo de referencia. Consulta siempre con tu pediatra para consejos médicos.",
   },
@@ -325,6 +483,85 @@ export const translations = {
     calcWarnAtLeastOne: "Si us plau, introdueix almenys una mesura (pes, alçada o perímetre cranial).",
     calcWarnAgeExceeds: "L'edat supera el rang suportat (0–5 anys). No es pot calcular el percentil.",
 
+    // Percentile interpretation
+    interpVeryLow: "Molt per sota de la mitjana",
+    interpLow: "Per sota de la mitjana",
+    interpNormal: "Dins del rang normal",
+    interpHigh: "Per sobre de la mitjana",
+    interpVeryHigh: "Molt per sobre de la mitjana",
+    interpDesc: "El teu nadó està per sobre del {percentile} de {genderLabel} de la seva mateixa edat",
+    interpZoneVeryLow: "Molt baix",
+    interpZoneLow: "Baix",
+    interpZoneNormal: "Normal",
+    interpZoneHigh: "Alt",
+    interpZoneVeryHigh: "Molt alt",
+    summaryAllNormal: "Bones notícies! Totes les mesures estan dins del rang normal. El teu nadó creix bé.",
+    summaryMostlyNormal: "La majoria de mesures estan en el rang normal. Segueix amb les revisions habituals amb el teu pediatra.",
+    summarySomeConcern: "Algunes mesures estan fora del rang típic. Considera comentar-ho amb el teu pediatra a la propera visita.",
+    summaryConsultDoctor: "Algunes mesures necessiten atenció. Et recomanem consultar amb el teu pediatra.",
+
+    // Baby profiles
+    profileLabel: "Nadó",
+    profileAdd: "Afegir nadó",
+    profileName: "Nom del nadó",
+    profileNamePlaceholder: "ex. Emma",
+    profileCreate: "Crear",
+    profileCancel: "Cancel·lar",
+    profileDelete: "Eliminar perfil",
+    profileDeleteConfirm: "Eliminar \"{name}\" i totes les seves mesures?",
+    profileNoProfiles: "Sense perfils encara",
+    profileSaved: "Mesura guardada!",
+    profileSaveToHistory: "Guardar",
+    profileMeasurements: "{count} mesures",
+    profileResultsFor: "Resultats de {name}",
+
+    // History & Evolution integration
+    historyTitle: "Historial de Mesures",
+    historyEmpty: "No hi ha mesures guardades. Usa la calculadora per afegir mesures.",
+    historyDate: "Data",
+    historyAge: "Edat",
+    historyDelete: "Eliminar",
+    historyEdit: "Editar",
+    historyEditSave: "Guardar",
+    historyEditCancel: "Cancel·lar",
+    historyDays: "d",
+    historyUseInEvolution: "Veure evolució",
+    evoSourceFile: "Fitxer Excel",
+    evoSourceHistory: "Historial guardat",
+    evoDataSource: "Font de dades",
+    evoNoHistory: "No hi ha mesures guardades per aquest nadó. Usa la calculadora per afegir mesures.",
+
+    // Save dialog
+    saveMeasurementDate: "Data de la mesura",
+    saveMeasurementDateHint: "Quan es va prendre aquesta mesura?",
+
+    // Share
+    shareResult: "Compartir",
+    shareCopied: "Copiat!",
+
+    // Onboarding
+    onboardingCreateProfile: "Crea un perfil per guardar les mesures del teu nadó i seguir la seva evolució.",
+    onboardingCreate: "Crear perfil",
+
+    // After save
+    savedViewEvolution: "Veure evolució",
+
+    // History export
+    historyExport: "Exportar Excel",
+    historyPercentile: "Percentil",
+
+    // Calculator alerts
+    calcAlertDrop: "{measure} ha baixat de P{prev} a P{current} des de l'última mesura.",
+    calcAlertRise: "{measure} ha pujat de P{prev} a P{current} des de l'última mesura.",
+
+    // Alerts
+    alertDropTitle: "Canvi de percentil detectat",
+    alertDrop: "{measure} ha baixat de P{prev} a P{current}. Considera consultar amb el teu pediatra.",
+    alertRise: "{measure} ha pujat de P{prev} a P{current}.",
+
+    // Evolution export
+    evoExportChart: "Exportar gràfic",
+
     // Evolution
     evoTitle: "Evolució de {measure}",
     evoSubtitle: "Corbes de percentils OMS per a {gender}",
@@ -367,27 +604,27 @@ export const translations = {
     coachWelcomeTitle: "Benvingut!",
     coachWelcomeText: "Aquesta app t'ajuda a seguir el creixement del teu nadó utilitzant els estàndards de l'OMS. Fem un tour ràpid!",
     coachNavTitle: "Navegació",
-    coachNavText: "Utilitza aquests enllaços per canviar entre la Calculadora (mesura individual), Evolució (gràfics en el temps) i Manual d'Usuari.",
+    coachNavText: "Utilitza aquests enllaços per canviar entre la Calculadora (les 3 mesures alhora), Evolució (gràfics en el temps) i Manual d'Usuari.",
     coachMetricTitle: "Tria una Mètrica",
-    coachMetricText: "Selecciona què vols mesurar: Pes, Alçada o Perímetre Cranial.",
+    coachMetricText: "Selecciona la mètrica a mostrar al gràfic d'Evolució: Pes, Alçada o Perímetre Cranial.",
     coachGenderTitle: "Selecciona el Sexe",
     coachGenderText: "Les corbes de creixement de l'OMS varien segons el sexe. Selecciona el sexe del teu nadó aquí.",
     coachLanguageTitle: "Idioma",
     coachLanguageText: "Pots canviar entre anglès, castellà i català en qualsevol moment.",
     coachAgeInputTitle: "Entrada d'Edat",
     coachAgeInputText: "Tria com introduir l'edat del nadó: data de naixement (es guarda automàticament), dies o mesos.",
-    coachMeasurementTitle: "Mesura",
-    coachMeasurementText: "Introdueix el valor de la mesura aquí. La unitat depèn de la mètrica seleccionada.",
+    coachMeasurementTitle: "Mesures",
+    coachMeasurementText: "Introdueix pes, alçada i/o perímetre cranial. Pots omplir qualsevol combinació.",
     coachCalculateTitle: "Calcular",
-    coachCalculateText: "Fes clic aquí per calcular el percentil basat en els estàndards de creixement de l'OMS.",
+    coachCalculateText: "Fes clic aquí per calcular els percentils basats en els estàndards de creixement de l'OMS.",
     coachResultTitle: "Resultats",
-    coachResultText: "El resultat del percentil apareixerà aquí amb un indicador visual que mostra la posició del teu nadó.",
+    coachResultText: "Els resultats apareixeran aquí amb barres de zona que mostren la posició del teu nadó per a cada mesura.",
     coachUploadTitle: "Pujar Dades",
-    coachUploadText: "Puja un fitxer Excel amb les mesures del teu nadó al llarg del temps per veure l'evolució del creixement.",
+    coachUploadText: "Puja un fitxer Excel o utilitza l'historial de mesures guardades per veure l'evolució del creixement.",
     coachHelpTitle: "Ajuda de Format",
     coachHelpText: "Fes clic aquí per veure instruccions detallades sobre com preparar el teu fitxer Excel.",
     coachChartTitle: "Gràfic de Creixement",
-    coachChartText: "Aquest gràfic mostra les corbes de percentils de l'OMS. Les dades del teu nadó se superposaran quan pugis un fitxer.",
+    coachChartText: "Aquest gràfic mostra les corbes de percentils de l'OMS. Les dades del teu nadó se superposaran quan pugis un fitxer o utilitzis l'historial guardat.",
     coachDisclaimerTitle: "Important",
     coachDisclaimerText: "Recorda: aquesta eina és només de referència. Consulta sempre amb el teu pediatra per a consells mèdics.",
   },
