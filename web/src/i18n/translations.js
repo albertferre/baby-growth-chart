@@ -37,7 +37,7 @@ export const translations = {
 
     // Calculator
     calcTitle: "Percentile Calculator",
-    calcSubtitle: "Enter age and measurement to calculate the growth percentile",
+    calcSubtitle: "Enter age and measurements to calculate growth percentiles",
     calcAgeMethod: "Age input method",
     calcBirthDate: "Birth date",
     calcDays: "Days",
@@ -60,6 +60,7 @@ export const translations = {
     calcWarnEnterMonths: "Please enter the age in months.",
     calcWarnFutureDate: "The birth date cannot be in the future.",
     calcWarnPositiveValue: "Please enter a positive value for the measurement.",
+    calcWarnAtLeastOne: "Please enter at least one measurement (weight, height, or head circumference).",
     calcWarnAgeExceeds: "The age exceeds the supported range (0–5 years). Cannot calculate percentile.",
 
     // Evolution
@@ -167,7 +168,7 @@ export const translations = {
 
     // Calculator
     calcTitle: "Calculadora de Percentiles",
-    calcSubtitle: "Introduce la edad y medida para calcular el percentil de crecimiento",
+    calcSubtitle: "Introduce la edad y las medidas para calcular los percentiles de crecimiento",
     calcAgeMethod: "Método de entrada de edad",
     calcBirthDate: "Fecha de nacimiento",
     calcDays: "Días",
@@ -190,6 +191,7 @@ export const translations = {
     calcWarnEnterMonths: "Por favor, introduce la edad en meses.",
     calcWarnFutureDate: "La fecha de nacimiento no puede ser futura.",
     calcWarnPositiveValue: "Por favor, introduce un valor positivo para la medida.",
+    calcWarnAtLeastOne: "Por favor, introduce al menos una medida (peso, altura o perímetro craneal).",
     calcWarnAgeExceeds: "La edad supera el rango soportado (0–5 años). No se puede calcular el percentil.",
 
     // Evolution
@@ -297,7 +299,7 @@ export const translations = {
 
     // Calculator
     calcTitle: "Calculadora de Percentils",
-    calcSubtitle: "Introdueix l'edat i la mesura per calcular el percentil de creixement",
+    calcSubtitle: "Introdueix l'edat i les mesures per calcular els percentils de creixement",
     calcAgeMethod: "Mètode d'entrada d'edat",
     calcBirthDate: "Data de naixement",
     calcDays: "Dies",
@@ -320,6 +322,7 @@ export const translations = {
     calcWarnEnterMonths: "Si us plau, introdueix l'edat en mesos.",
     calcWarnFutureDate: "La data de naixement no pot ser futura.",
     calcWarnPositiveValue: "Si us plau, introdueix un valor positiu per a la mesura.",
+    calcWarnAtLeastOne: "Si us plau, introdueix almenys una mesura (pes, alçada o perímetre cranial).",
     calcWarnAgeExceeds: "L'edat supera el rang suportat (0–5 anys). No es pot calcular el percentil.",
 
     // Evolution

@@ -1873,6 +1873,69 @@ select:focus-visible {
   filter: drop-shadow(0 -2px 1px rgba(0, 0, 0, 0.05));
 }
 
+/* ── Measurements row (3 inputs side by side) ────── */
+.measurements-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ── Multi-result display ────────────────────────── */
+.multi-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.multi-result-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--c-bg-subtle);
+  border-radius: var(--radius-sm);
+  animation: fadeInUp 0.35s ease;
+}
+
+.mini-gauge {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mini-gauge svg {
+  transform: rotate(-90deg);
+}
+
+.mini-gauge .percentile-gauge-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.multi-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.multi-result-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-text-muted);
+}
+
+.multi-result-percentile {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 1024px) {
   .calculator-layout {
@@ -2039,6 +2102,11 @@ select:focus-visible {
   .evolution-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .measurements-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
   /* Better touch targets */
