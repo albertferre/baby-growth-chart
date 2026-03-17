@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { getPercentile } from "../utils/percentile";
 import { MEASURES_UNITS } from "../utils/data";
 import { useLanguage } from "../i18n/LanguageContext";
+import { addMeasurement, getProfile, deleteMeasurement, updateMeasurement } from "../utils/babyStore";
 import SEOHead from "../components/SEOHead";
 
 const STORAGE_KEY_BIRTHDATE = "baby-growth-birthdate";
+const STORAGE_KEY_VALUES = "baby-growth-last-values";
 
 function getSavedBirthDate() {
   try {
@@ -23,6 +26,25 @@ function getPercentileColor(p, gender) {
   if (p < 15) return "#60a5fa";
   if (p < 85) return "#3b82f6";
   return "#2563eb";
+}
+
+function getZone(p) {
+  if (p < 3) return "veryLow";
+  if (p < 15) return "low";
+  if (p <= 85) return "normal";
+  if (p <= 97) return "high";
+  return "veryHigh";
+}
+
+function getZoneColor(zone) {
+  switch (zone) {
+    case "veryLow": return "#ef4444";
+    case "low": return "#f59e0b";
+    case "normal": return "#22c55e";
+    case "high": return "#f59e0b";
+    case "veryHigh": return "#ef4444";
+    default: return "#94a3b8";
+  }
 }
 
 function WarningIcon() {
@@ -54,7 +76,59 @@ function DownloadIcon() {
   );
 }
 
-const MEASURES = ["Weight", "Height", "Head Circumference"];
+function SaveIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
+function HistoryIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 8v4l3 3" /><circle cx="12" cy="12" r="10" />
+    </svg>
+  );
+}
 
 function MiniGauge({ percentile, color, size = 80 }) {
   const r = (size / 2) - 10;
@@ -90,18 +164,168 @@ function MiniGauge({ percentile, color, size = 80 }) {
   );
 }
 
-export default function Calculator({ allData, gender }) {
+function ZoneBar({ percentile, t }) {
+  const zones = [
+    { key: "veryLow", end: 3, color: "#ef4444" },
+    { key: "low", end: 15, color: "#f59e0b" },
+    { key: "normal", end: 85, color: "#22c55e" },
+    { key: "high", end: 97, color: "#f59e0b" },
+    { key: "veryHigh", end: 100, color: "#ef4444" },
+  ];
+  const zoneLabels = {
+    veryLow: t("interpZoneVeryLow"),
+    low: t("interpZoneLow"),
+    normal: t("interpZoneNormal"),
+    high: t("interpZoneHigh"),
+    veryHigh: t("interpZoneVeryHigh"),
+  };
+
+  return (
+    <div className="zone-bar-container">
+      <div className="zone-bar">
+        {zones.map((z, i) => {
+          const prevEnd = i === 0 ? 0 : zones[i - 1].end;
+          const width = z.end - prevEnd;
+          return (
+            <div
+              key={z.key}
+              className="zone-bar-segment"
+              style={{ width: `${width}%`, background: z.color }}
+              title={zoneLabels[z.key]}
+            />
+          );
+        })}
+        <div
+          className="zone-bar-marker"
+          style={{ left: `${Math.min(Math.max(percentile, 1), 99)}%` }}
+        >
+          <div className="zone-bar-marker-dot" />
+        </div>
+      </div>
+      <div className="zone-bar-labels">
+        <span style={{ position: "absolute", left: "0%" }}>P3</span>
+        <span style={{ position: "absolute", left: "15%", transform: "translateX(-50%)" }}>P15</span>
+        <span style={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }}>P50</span>
+        <span style={{ position: "absolute", left: "85%", transform: "translateX(-50%)" }}>P85</span>
+        <span style={{ position: "absolute", left: "97%", transform: "translateX(-50%)" }}>P97</span>
+      </div>
+    </div>
+  );
+}
+
+function PercentileInterpretation({ results, gender, t }) {
+  const activeResults = results.filter((r) => r !== null);
+  if (activeResults.length === 0) return null;
+
+  const genderLabel = gender === "Boys" ? t("genderBoys").toLowerCase() : t("genderGirls").toLowerCase();
+
+  // Calculate summary
+  const zones = activeResults.map((r) => getZone(parseFloat(r.percentile)));
+  const allNormal = zones.every((z) => z === "normal");
+  const hasVeryLowOrHigh = zones.some((z) => z === "veryLow" || z === "veryHigh");
+  const abnormalCount = zones.filter((z) => z !== "normal").length;
+
+  let summary;
+  if (allNormal) {
+    summary = t("summaryAllNormal");
+  } else if (abnormalCount === 1 && !hasVeryLowOrHigh) {
+    summary = t("summaryMostlyNormal");
+  } else if (hasVeryLowOrHigh) {
+    summary = t("summaryConsultDoctor");
+  } else {
+    summary = t("summarySomeConcern");
+  }
+
+  const summaryType = allNormal ? "good" : hasVeryLowOrHigh ? "concern" : "info";
+
+  return (
+    <div className="interpretation-section">
+      {activeResults.map((r) => {
+        const pNum = parseFloat(r.percentile);
+        const zone = getZone(pNum);
+        const zoneColor = getZoneColor(zone);
+        const label =
+          r.measure === "Weight" ? t("measureWeight")
+          : r.measure === "Height" ? t("measureHeight")
+          : t("measureHeadCircumference");
+
+        const interpKey =
+          zone === "veryLow" ? "interpVeryLow"
+          : zone === "low" ? "interpLow"
+          : zone === "normal" ? "interpNormal"
+          : zone === "high" ? "interpHigh"
+          : "interpVeryHigh";
+
+        return (
+          <div key={r.measure} className="interpretation-item">
+            <div className="interpretation-item-header">
+              <span className="interpretation-item-label">{label}</span>
+              <span className="interpretation-item-badge" style={{ background: zoneColor + "20", color: zoneColor }}>
+                {t(interpKey)}
+              </span>
+            </div>
+            <p className="interpretation-item-desc">
+              {t("interpDesc", { percentile: r.percentile, genderLabel }).split(r.percentile).map((part, i, arr) =>
+                i < arr.length - 1 ? (
+                  <span key={i}>{part}<strong className="interp-percentile-highlight" style={{ color: zoneColor }}>{r.percentile}%</strong></span>
+                ) : (
+                  <span key={i}>{part}</span>
+                )
+              )}
+            </p>
+            <ZoneBar percentile={pNum} t={t} />
+          </div>
+        );
+      })}
+
+      <div className={`interpretation-summary interpretation-summary-${summaryType}`}>
+        <p>{summary}</p>
+      </div>
+    </div>
+  );
+}
+
+function getSavedValues() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_VALUES);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+export default function Calculator({ allData, gender, activeProfileId, onProfileUpdated, onRequestCreateProfile }) {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const saved = getSavedValues();
   const [ageInputMode, setAgeInputMode] = useState("birthdate");
+  const [ageMethodOpen, setAgeMethodOpen] = useState(false);
   const [birthDate, setBirthDate] = useState(getSavedBirthDate);
-  const [ageInDays, setAgeInDays] = useState("");
-  const [ageInMonths, setAgeInMonths] = useState("");
-  const [weightValue, setWeightValue] = useState("");
-  const [heightValue, setHeightValue] = useState("");
-  const [hcValue, setHcValue] = useState("");
+  const [ageInDays, setAgeInDays] = useState(saved.ageInDays || "");
+  const [ageInMonths, setAgeInMonths] = useState(saved.ageInMonths || "");
+  const [weightValue, setWeightValue] = useState(saved.weight || "");
+  const [heightValue, setHeightValue] = useState(saved.height || "");
+  const [hcValue, setHcValue] = useState(saved.hc || "");
   const [results, setResults] = useState(null);
   const [warning, setWarning] = useState("");
+  const [savedMessage, setSavedMessage] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveDate, setSaveDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [shareConfirm, setShareConfirm] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [editingMeasurement, setEditingMeasurement] = useState(null);
+  const [editValues, setEditValues] = useState({});
   const resultRef = useRef(null);
+
+  const profile = activeProfileId ? getProfile(activeProfileId) : null;
+
+  // Persist form values to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_VALUES, JSON.stringify({
+        weight: weightValue, height: heightValue, hc: hcValue,
+        ageInDays, ageInMonths,
+      }));
+    } catch { /* ignore */ }
+  }, [weightValue, heightValue, hcValue, ageInDays, ageInMonths]);
 
   // Export result as PNG image
   const exportResult = async () => {
@@ -130,6 +354,16 @@ export default function Calculator({ allData, gender }) {
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 16px Inter, sans-serif";
     ctx.fillText("Baby Growth Chart", 20, 32);
+
+    // Baby name if profile active
+    const profile = activeProfileId ? getProfile(activeProfileId) : null;
+    if (profile) {
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "12px Inter, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(profile.name, 380, 32);
+      ctx.textAlign = "left";
+    }
 
     // Age info
     const firstResult = activeResults[0];
@@ -211,6 +445,7 @@ export default function Calculator({ allData, gender }) {
     e.preventDefault();
     setResults(null);
     setWarning("");
+    setSavedMessage("");
 
     const days = calculateDaysFromInput();
 
@@ -274,6 +509,121 @@ export default function Calculator({ allData, gender }) {
     }
 
     setResults(newResults);
+
+    // Auto-scroll to results on mobile
+    setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }
+
+  function handleOpenSaveDialog() {
+    setSaveDate(new Date().toISOString().split("T")[0]);
+    setShowSaveDialog(true);
+  }
+
+  function handleConfirmSave() {
+    if (!activeProfileId || !results) return;
+
+    const days = calculateDaysFromInput();
+    const wVal = parseFloat(weightValue);
+    const hVal = parseFloat(heightValue);
+    const hcVal = parseFloat(hcValue);
+
+    addMeasurement(activeProfileId, {
+      days,
+      weight: weightValue && wVal > 0 ? wVal : null,
+      height: heightValue && hVal > 0 ? hVal : null,
+      hc: hcValue && hcVal > 0 ? hcVal : null,
+      date: saveDate,
+    });
+
+    setShowSaveDialog(false);
+    setSavedMessage(true);
+    if (onProfileUpdated) onProfileUpdated();
+    setTimeout(() => setSavedMessage(false), 5000);
+  }
+
+  async function handleShare() {
+    if (!results) return;
+    const activeResults = results.filter((r) => r !== null);
+    if (activeResults.length === 0) return;
+
+    const profileName = profile ? profile.name : "";
+    const lines = activeResults.map((r) => {
+      const label = r.measure === "Weight" ? t("measureWeight") : r.measure === "Height" ? t("measureHeight") : t("measureHeadCircumference");
+      return `${label}: P${r.percentile}`;
+    });
+    const age = `${activeResults[0].months} ${t("calcResultMonths")}`;
+    const text = [
+      profileName ? `${profileName} - ${age}` : age,
+      ...lines,
+      "",
+      "Baby Growth Chart - WHO Standards",
+    ].join("\n");
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Baby Growth Chart", text });
+        return;
+      } catch { /* user cancelled or not supported */ }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for insecure contexts (HTTP)
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+    setShareConfirm(true);
+    setTimeout(() => setShareConfirm(false), 2000);
+  }
+
+  function handleDeleteMeasurement(mId) {
+    if (!activeProfileId) return;
+    deleteMeasurement(activeProfileId, mId);
+    if (onProfileUpdated) onProfileUpdated();
+  }
+
+  function handleStartEdit(m) {
+    setEditingMeasurement(m.id);
+    setEditValues({ days: m.days, weight: m.weight || "", height: m.height || "", hc: m.hc || "", date: m.date || "" });
+  }
+
+  function handleSaveEdit() {
+    if (!activeProfileId || !editingMeasurement) return;
+    updateMeasurement(activeProfileId, editingMeasurement, {
+      days: parseInt(editValues.days, 10),
+      weight: editValues.weight ? parseFloat(editValues.weight) : null,
+      height: editValues.height ? parseFloat(editValues.height) : null,
+      hc: editValues.hc ? parseFloat(editValues.hc) : null,
+      date: editValues.date,
+    });
+    setEditingMeasurement(null);
+    if (onProfileUpdated) onProfileUpdated();
+  }
+
+  async function handleExportHistory() {
+    if (!profile || !profile.measurements || profile.measurements.length === 0) return;
+    const XLSX = await import("xlsx");
+    const rows = profile.measurements.map((m) => {
+      const row = { date: m.date || "", day: m.days, w: m.weight, h: m.height, hc: m.hc };
+      if (allData && m.days < (allData.Weight?.length || 0)) {
+        if (m.weight) row["w_percentile"] = parseFloat(getPercentile(m.weight, allData.Weight[m.days]).toFixed(1));
+        if (m.height) row["h_percentile"] = parseFloat(getPercentile(m.height, allData.Height[m.days]).toFixed(1));
+        if (m.hc) row["hc_percentile"] = parseFloat(getPercentile(m.hc, allData["Head Circumference"][m.days]).toFixed(1));
+      }
+      return row;
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "History");
+    XLSX.writeFile(wb, `${profile.name}-measurements.xlsx`);
   }
 
   const hasResults = results && results.some(r => r !== null);
@@ -293,31 +643,36 @@ export default function Calculator({ allData, gender }) {
       <div className="calculator-layout">
         <div className="card">
           <form onSubmit={handleCalculate} className="calculator-form">
-            <div className="form-group">
-              <label className="form-label">{t("calcAgeMethod")}</label>
-              <div className="age-mode-toggle">
-                <button
-                  type="button"
-                  className={ageInputMode === "birthdate" ? "active" : ""}
-                  onClick={() => setAgeInputMode("birthdate")}
-                >
-                  {t("calcBirthDate")}
-                </button>
-                <button
-                  type="button"
-                  className={ageInputMode === "days" ? "active" : ""}
-                  onClick={() => setAgeInputMode("days")}
-                >
-                  {t("calcDays")}
-                </button>
-                <button
-                  type="button"
-                  className={ageInputMode === "months" ? "active" : ""}
-                  onClick={() => setAgeInputMode("months")}
-                >
-                  {t("calcMonths")}
-                </button>
-              </div>
+            <div className="form-group age-method-group">
+              <button
+                type="button"
+                className="age-method-trigger"
+                onClick={() => setAgeMethodOpen(!ageMethodOpen)}
+              >
+                <span className="age-method-label">{t("calcAgeMethod")}:</span>
+                <span className="age-method-current">
+                  {ageInputMode === "birthdate" ? t("calcBirthDate") : ageInputMode === "days" ? t("calcDays") : t("calcMonths")}
+                </span>
+                <svg className={`age-method-chevron ${ageMethodOpen ? "open" : ""}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+              </button>
+              {ageMethodOpen && (
+                <div className="age-mode-toggle">
+                  {[
+                    { key: "birthdate", label: t("calcBirthDate") },
+                    { key: "days", label: t("calcDays") },
+                    { key: "months", label: t("calcMonths") },
+                  ].map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      className={ageInputMode === opt.key ? "active" : ""}
+                      onClick={() => { setAgeInputMode(opt.key); setAgeMethodOpen(false); }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {ageInputMode === "birthdate" && (
@@ -433,36 +788,88 @@ export default function Calculator({ allData, gender }) {
         <div ref={resultRef} className={`card result-card ${hasResults ? "has-result" : ""}`} role="region" aria-label={t("calcResultLabel")} aria-live="polite">
           {hasResults && (
             <div className="result-header">
+              {profile && <span className="result-profile-name">{t("profileResultsFor", { name: profile.name })}</span>}
+              {activeProfileId && !savedMessage && (
+                <button className="btn-save-history" onClick={handleOpenSaveDialog} title={t("profileSaveToHistory")}>
+                  <SaveIcon />
+                  <span>{t("profileSaveToHistory")}</span>
+                </button>
+              )}
+              {savedMessage && (
+                <span className="saved-confirmation">
+                  <CheckCircleIcon /> {t("profileSaved")}
+                  <button className="saved-evo-link" onClick={() => navigate("/evolution")}>{t("savedViewEvolution")}</button>
+                </span>
+              )}
+              <button className="btn-export" onClick={handleShare} title={t("shareResult")}>
+                {shareConfirm ? <CheckCircleIcon /> : <ShareIcon />}
+                <span>{shareConfirm ? t("shareCopied") : t("shareResult")}</span>
+              </button>
               <button className="btn-export" onClick={exportResult} title={t("exportResult")}>
                 <DownloadIcon />
                 <span>{t("exportResult")}</span>
               </button>
             </div>
           )}
+
+          {/* Save dialog with date picker */}
+          {showSaveDialog && (
+            <div className="save-dialog">
+              <label className="form-label">{t("saveMeasurementDate")}</label>
+              <p className="save-dialog-hint">{t("saveMeasurementDateHint")}</p>
+              <input
+                type="date"
+                className="form-input"
+                value={saveDate}
+                onChange={(e) => setSaveDate(e.target.value)}
+              />
+              <div className="save-dialog-actions">
+                <button className="profile-form-btn create" onClick={handleConfirmSave}>{t("profileSaveToHistory")}</button>
+                <button className="profile-form-btn cancel" onClick={() => setShowSaveDialog(false)}>{t("profileCancel")}</button>
+              </div>
+            </div>
+          )}
+
           {hasResults ? (
             <>
-              <div className="multi-results">
-                {results.map((r, i) => {
-                  if (!r) return null;
-                  const pNum = parseFloat(r.percentile);
-                  const pColor = getPercentileColor(pNum, gender);
-                  const label = r.measure === "Weight" ? t("measureWeight")
-                    : r.measure === "Height" ? t("measureHeight")
-                    : t("measureHeadCircumference");
-                  return (
-                    <div key={r.measure} className="multi-result-item">
-                      <MiniGauge percentile={pNum} color={pColor} size={80} />
-                      <div className="multi-result-info">
-                        <span className="multi-result-label">{label}</span>
-                        <span className="multi-result-percentile" style={{ color: pColor }}>
-                          {r.percentile}%
-                        </span>
-                        <span className="percentile-label">{t("calcResultPercentile")}</span>
+              {/* Percentile change alerts vs last saved */}
+              {profile && profile.measurements && profile.measurements.length > 0 && results && (() => {
+                const lastM = profile.measurements[profile.measurements.length - 1];
+                const alerts = [];
+                const pairs = [
+                  { key: "Weight", field: "weight", label: t("measureWeight") },
+                  { key: "Height", field: "height", label: t("measureHeight") },
+                  { key: "Head Circumference", field: "hc", label: t("measureHeadCircumference") },
+                ];
+                for (const p of pairs) {
+                  const r = results.find((r) => r && r.measure === p.key);
+                  if (!r || !lastM[p.field] || !allData?.[p.key]) continue;
+                  const lastDayData = allData[p.key][lastM.days];
+                  if (!lastDayData) continue;
+                  const lastPerc = getPercentile(lastM[p.field], lastDayData);
+                  const diff = parseFloat(r.percentile) - lastPerc;
+                  if (Math.abs(diff) >= 15) {
+                    alerts.push({
+                      type: diff < 0 ? "drop" : "rise",
+                      label: p.label,
+                      prev: lastPerc.toFixed(0),
+                      current: parseFloat(r.percentile).toFixed(0),
+                    });
+                  }
+                }
+                if (alerts.length === 0) return null;
+                return (
+                  <div className="evo-alerts" style={{ marginBottom: "0.75rem" }}>
+                    {alerts.map((a, i) => (
+                      <div key={i} className={`evo-alert evo-alert-${a.type}`}>
+                        {t(a.type === "drop" ? "calcAlertDrop" : "calcAlertRise", { measure: a.label, prev: a.prev, current: a.current })}
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              <PercentileInterpretation results={results} gender={gender} t={t} />
 
               <div className="result-stats-row">
                 <div className="result-stat">
@@ -482,9 +889,90 @@ export default function Calculator({ allData, gender }) {
               </div>
               <span className="result-empty-text">{t("calcResultEmpty")}</span>
               <span className="result-empty-hint">{t("calcResultHint")}</span>
+              {!activeProfileId && onRequestCreateProfile && (
+                <div className="onboarding-hint">
+                  <p>{t("onboardingCreateProfile")}</p>
+                  <button className="onboarding-btn" onClick={onRequestCreateProfile}>{t("onboardingCreate")}</button>
+                </div>
+              )}
             </div>
           )}
         </div>
+
+        {/* Measurement History */}
+        {profile && profile.measurements && profile.measurements.length > 0 && (
+          <div className="card history-card">
+            <div className="history-header">
+              <button className="history-toggle" onClick={() => setShowHistory(!showHistory)}>
+                <HistoryIcon />
+                <span>{t("historyTitle")} ({profile.measurements.length})</span>
+                <svg className={`age-method-chevron ${showHistory ? "open" : ""}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+              </button>
+              {showHistory && (
+                <button className="btn-export-history" onClick={handleExportHistory}>
+                  <DownloadIcon /> <span>{t("historyExport")}</span>
+                </button>
+              )}
+            </div>
+            {showHistory && (
+              <div className="history-table-wrapper">
+                <table className="history-table">
+                  <thead>
+                    <tr>
+                      <th>{t("historyDate")}</th>
+                      <th>{t("historyAge")}</th>
+                      <th>{t("measureWeight")}</th>
+                      <th>{t("measureHeight")}</th>
+                      <th>PC</th>
+                      <th>{t("historyPercentile")}</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {profile.measurements.map((m) => {
+                      // Calculate percentiles for this measurement
+                      const percs = [];
+                      if (allData && m.days < (allData.Weight?.length || 0)) {
+                        if (m.weight) percs.push("W:" + getPercentile(m.weight, allData.Weight[m.days]).toFixed(0));
+                        if (m.height) percs.push("H:" + getPercentile(m.height, allData.Height[m.days]).toFixed(0));
+                        if (m.hc) percs.push("HC:" + getPercentile(m.hc, allData["Head Circumference"][m.days]).toFixed(0));
+                      }
+                      const percText = percs.join(" ");
+
+                      return editingMeasurement === m.id ? (
+                        <tr key={m.id} className="history-row-edit">
+                          <td><input type="date" className="history-edit-input" value={editValues.date} onChange={(e) => setEditValues({ ...editValues, date: e.target.value })} /></td>
+                          <td><input type="number" className="history-edit-input" value={editValues.days} onChange={(e) => setEditValues({ ...editValues, days: e.target.value })} /></td>
+                          <td><input type="number" step="any" className="history-edit-input" value={editValues.weight} onChange={(e) => setEditValues({ ...editValues, weight: e.target.value })} /></td>
+                          <td><input type="number" step="any" className="history-edit-input" value={editValues.height} onChange={(e) => setEditValues({ ...editValues, height: e.target.value })} /></td>
+                          <td><input type="number" step="any" className="history-edit-input" value={editValues.hc} onChange={(e) => setEditValues({ ...editValues, hc: e.target.value })} /></td>
+                          <td></td>
+                          <td className="history-actions">
+                            <button className="history-action-btn save" onClick={handleSaveEdit} title={t("historyEditSave")}><CheckCircleIcon /></button>
+                            <button className="history-action-btn" onClick={() => setEditingMeasurement(null)} title={t("historyEditCancel")}>&times;</button>
+                          </td>
+                        </tr>
+                      ) : (
+                        <tr key={m.id}>
+                          <td>{m.date || "—"}</td>
+                          <td>{m.days}{t("historyDays")}</td>
+                          <td>{m.weight ?? "—"}</td>
+                          <td>{m.height ?? "—"}</td>
+                          <td>{m.hc ?? "—"}</td>
+                          <td className="history-percs">{percText || "—"}</td>
+                          <td className="history-actions">
+                            <button className="history-action-btn" onClick={() => handleStartEdit(m)} title={t("historyEdit")}><EditIcon /></button>
+                            <button className="history-action-btn delete" onClick={() => handleDeleteMeasurement(m.id)} title={t("historyDelete")}><TrashIcon /></button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
