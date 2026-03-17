@@ -1,25 +1,45 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useLanguage } from "../i18n/LanguageContext";
 import SEOHead from "../components/SEOHead";
 
+const MANUAL_FILES = {
+  en: "user_manual.md",
+  es: "user_manual_es.md",
+  ca: "user_manual_ca.md",
+};
+
 export default function UserManual() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}user_manual.md`)
-      .then((res) => res.text())
+    setLoading(true);
+    const file = MANUAL_FILES[language] || MANUAL_FILES.en;
+    fetch(`${import.meta.env.BASE_URL}${file}`)
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.text();
+      })
       .then((text) => {
         setContent(text);
         setLoading(false);
       })
       .catch(() => {
-        setContent("");
-        setLoading(false);
+        // Fallback to English
+        if (language !== "en") {
+          fetch(`${import.meta.env.BASE_URL}${MANUAL_FILES.en}`)
+            .then((res) => res.text())
+            .then((text) => { setContent(text); setLoading(false); })
+            .catch(() => { setContent(""); setLoading(false); });
+        } else {
+          setContent("");
+          setLoading(false);
+        }
       });
-  }, []);
+  }, [language]);
 
   if (loading) {
     return (
@@ -51,7 +71,7 @@ export default function UserManual() {
         path="/manual"
       />
       <div className="manual-content">
-        <ReactMarkdown>{content}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
       </div>
     </div>
   );
