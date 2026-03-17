@@ -54,32 +54,75 @@ function DownloadIcon() {
   );
 }
 
-export default function Calculator({ data, measure, gender }) {
+const MEASURES = ["Weight", "Height", "Head Circumference"];
+
+function MiniGauge({ percentile, color, size = 80 }) {
+  const r = (size / 2) - 10;
+  const circumference = 2 * Math.PI * r;
+  const offset = circumference * (1 - percentile / 100);
+
+  return (
+    <div className="mini-gauge" style={{ width: size, height: size }}>
+      <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+        <circle
+          className="percentile-gauge-bg"
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+        />
+        <circle
+          className="percentile-gauge-fill"
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke={color}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{ filter: `drop-shadow(0 0 4px ${color}40)` }}
+        />
+      </svg>
+      <div className="percentile-gauge-value">
+        <span className="percentile-number animated" style={{ color, fontSize: "1.25rem" }}>
+          {percentile}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export default function Calculator({ allData, gender }) {
   const { t } = useLanguage();
-  const [ageInputMode, setAgeInputMode] = useState("birthdate"); // "birthdate" | "days" | "months"
+  const [ageInputMode, setAgeInputMode] = useState("birthdate");
   const [birthDate, setBirthDate] = useState(getSavedBirthDate);
   const [ageInDays, setAgeInDays] = useState("");
   const [ageInMonths, setAgeInMonths] = useState("");
-  const [value, setValue] = useState("");
-  const [result, setResult] = useState(null);
+  const [weightValue, setWeightValue] = useState("");
+  const [heightValue, setHeightValue] = useState("");
+  const [hcValue, setHcValue] = useState("");
+  const [results, setResults] = useState(null);
   const [warning, setWarning] = useState("");
   const resultRef = useRef(null);
 
   // Export result as PNG image
   const exportResult = async () => {
-    if (!result || !resultRef.current) return;
+    if (!results || !resultRef.current) return;
+
+    const activeResults = results.filter(r => r !== null);
+    if (activeResults.length === 0) return;
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const scale = 2; // For better quality
+    const scale = 2;
 
+    const cardHeight = 80;
+    const totalHeight = 180 + activeResults.length * cardHeight;
     canvas.width = 400 * scale;
-    canvas.height = 280 * scale;
+    canvas.height = totalHeight * scale;
     ctx.scale(scale, scale);
 
     // Background
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, 400, 280);
+    ctx.fillRect(0, 0, 400, totalHeight);
 
     // Header
     ctx.fillStyle = "#6366f1";
@@ -88,39 +131,49 @@ export default function Calculator({ data, measure, gender }) {
     ctx.font = "bold 16px Inter, sans-serif";
     ctx.fillText("Baby Growth Chart", 20, 32);
 
-    // Percentile
-    const pColor = getPercentileColor(parseFloat(result.percentile), gender);
-    ctx.fillStyle = pColor;
-    ctx.font = "bold 64px Inter, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(`${result.percentile}%`, 200, 130);
-
-    ctx.fillStyle = "#64748b";
-    ctx.font = "14px Inter, sans-serif";
-    ctx.fillText(t("calcResultPercentile"), 200, 155);
-
-    // Progress bar
-    ctx.fillStyle = "#f1f5f9";
-    ctx.fillRect(40, 175, 320, 12);
-    ctx.fillStyle = pColor;
-    ctx.fillRect(40, 175, 320 * (parseFloat(result.percentile) / 100), 12);
-
-    // Stats
+    // Age info
+    const firstResult = activeResults[0];
     ctx.fillStyle = "#1e293b";
     ctx.font = "12px Inter, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(`${t("calcResultAge")}: ${result.months} ${t("calcResultMonths")}`, 40, 220);
-    ctx.fillText(`${t("calcResultDays")}: ${result.days}`, 40, 240);
+    ctx.fillText(`${t("calcResultAge")}: ${firstResult.months} ${t("calcResultMonths")} (${firstResult.days} ${t("calcResultDays")})`, 20, 75);
+
+    // Results
+    let y = 100;
+    for (const r of activeResults) {
+      const pColor = getPercentileColor(parseFloat(r.percentile), gender);
+      const label = r.measure === "Weight" ? t("measureWeight")
+        : r.measure === "Height" ? t("measureHeight")
+        : t("measureHeadCircumference");
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 12px Inter, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(label, 20, y + 15);
+
+      ctx.fillStyle = pColor;
+      ctx.font = "bold 28px Inter, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(`${r.percentile}%`, 380, y + 18);
+
+      // Progress bar
+      ctx.fillStyle = "#f1f5f9";
+      ctx.fillRect(20, y + 35, 360, 8);
+      ctx.fillStyle = pColor;
+      ctx.fillRect(20, y + 35, 360 * (parseFloat(r.percentile) / 100), 8);
+
+      y += cardHeight;
+    }
 
     // Footer
     ctx.fillStyle = "#94a3b8";
     ctx.font = "10px Inter, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("WHO Child Growth Standards • babygrowthchart.app", 200, 268);
+    ctx.fillText("WHO Child Growth Standards • babygrowthchart.app", 200, totalHeight - 15);
 
     // Download
     const link = document.createElement("a");
-    link.download = `baby-growth-${result.percentile}pct.png`;
+    link.download = `baby-growth-percentiles.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
@@ -135,13 +188,6 @@ export default function Calculator({ data, measure, gender }) {
       }
     }
   }, [birthDate]);
-
-  // Translate measure name
-  const getMeasureLabel = () => {
-    if (measure === "Weight") return t("measureWeight");
-    if (measure === "Height") return t("measureHeight");
-    return t("measureHeadCircumference");
-  };
 
   function calculateDaysFromInput() {
     if (ageInputMode === "birthdate") {
@@ -163,7 +209,7 @@ export default function Calculator({ data, measure, gender }) {
 
   function handleCalculate(e) {
     e.preventDefault();
-    setResult(null);
+    setResults(null);
     setWarning("");
 
     const days = calculateDaysFromInput();
@@ -184,27 +230,53 @@ export default function Calculator({ data, measure, gender }) {
       return;
     }
 
-    const numValue = parseFloat(value);
-    if (!value || numValue <= 0) {
-      setWarning(t("calcWarnPositiveValue"));
+    const wVal = parseFloat(weightValue);
+    const hVal = parseFloat(heightValue);
+    const hcVal = parseFloat(hcValue);
+
+    const hasWeight = weightValue && wVal > 0;
+    const hasHeight = heightValue && hVal > 0;
+    const hasHc = hcValue && hcVal > 0;
+
+    if (!hasWeight && !hasHeight && !hasHc) {
+      setWarning(t("calcWarnAtLeastOne"));
       return;
     }
 
-    if (days >= data.length) {
-      setWarning(t("calcWarnAgeExceeds"));
-      return;
+    if (!allData) return;
+
+    const newResults = [];
+    const measures = [
+      { key: "Weight", value: wVal, has: hasWeight },
+      { key: "Height", value: hVal, has: hasHeight },
+      { key: "Head Circumference", value: hcVal, has: hasHc },
+    ];
+
+    for (const m of measures) {
+      if (!m.has) {
+        newResults.push(null);
+        continue;
+      }
+      const data = allData[m.key];
+      if (days >= data.length) {
+        setWarning(t("calcWarnAgeExceeds"));
+        return;
+      }
+      const dayData = data[days];
+      const percentile = getPercentile(m.value, dayData);
+      const months = (days / 30.5).toFixed(1);
+      newResults.push({
+        measure: m.key,
+        days,
+        months,
+        percentile: percentile.toFixed(1),
+      });
     }
 
-    const dayData = data[days];
-    const percentile = getPercentile(numValue, dayData);
-    const months = (days / 30.5).toFixed(1);
-
-    setResult({ days, months, percentile: percentile.toFixed(1) });
+    setResults(newResults);
   }
 
-  const unit = MEASURES_UNITS[measure];
-  const pNum = result ? parseFloat(result.percentile) : 0;
-  const pColor = result ? getPercentileColor(pNum, gender) : "#ccc";
+  const hasResults = results && results.some(r => r !== null);
 
   return (
     <div className="page">
@@ -297,20 +369,52 @@ export default function Calculator({ data, measure, gender }) {
               </div>
             )}
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="measurement">
-                {getMeasureLabel()} ({unit})
-              </label>
-              <input
-                id="measurement"
-                className="form-input"
-                type="number"
-                step="any"
-                min="0"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                placeholder={`${measure === "Weight" ? "7.5" : measure === "Height" ? "68" : "43"}`}
-              />
+            <div className="measurements-row">
+              <div className="form-group">
+                <label className="form-label" htmlFor="measurement-weight">
+                  {t("measureWeight")} ({MEASURES_UNITS["Weight"]})
+                </label>
+                <input
+                  id="measurement-weight"
+                  className="form-input"
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={weightValue}
+                  onChange={(e) => setWeightValue(e.target.value)}
+                  placeholder="7.5"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="measurement-height">
+                  {t("measureHeight")} ({MEASURES_UNITS["Height"]})
+                </label>
+                <input
+                  id="measurement-height"
+                  className="form-input"
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={heightValue}
+                  onChange={(e) => setHeightValue(e.target.value)}
+                  placeholder="68"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="measurement-hc">
+                  {t("measureHeadCircumference")} ({MEASURES_UNITS["Head Circumference"]})
+                </label>
+                <input
+                  id="measurement-hc"
+                  className="form-input"
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={hcValue}
+                  onChange={(e) => setHcValue(e.target.value)}
+                  placeholder="43"
+                />
+              </div>
             </div>
 
             <button type="submit" className="btn-primary">
@@ -326,8 +430,8 @@ export default function Calculator({ data, measure, gender }) {
           )}
         </div>
 
-        <div ref={resultRef} className={`card result-card ${result ? "has-result" : ""}`} role="region" aria-label={t("calcResultLabel")} aria-live="polite">
-          {result && (
+        <div ref={resultRef} className={`card result-card ${hasResults ? "has-result" : ""}`} role="region" aria-label={t("calcResultLabel")} aria-live="polite">
+          {hasResults && (
             <div className="result-header">
               <button className="btn-export" onClick={exportResult} title={t("exportResult")}>
                 <DownloadIcon />
@@ -335,45 +439,39 @@ export default function Calculator({ data, measure, gender }) {
               </button>
             </div>
           )}
-          {result ? (
+          {hasResults ? (
             <>
-              <div className="percentile-display">
-                <div className="percentile-gauge">
-                  <svg viewBox="0 0 140 140">
-                    <circle
-                      className="percentile-gauge-bg"
-                      cx="70"
-                      cy="70"
-                      r="60"
-                    />
-                    <circle
-                      className="percentile-gauge-fill"
-                      cx="70"
-                      cy="70"
-                      r="60"
-                      stroke={pColor}
-                      strokeDasharray={`${2 * Math.PI * 60}`}
-                      strokeDashoffset={`${2 * Math.PI * 60 * (1 - pNum / 100)}`}
-                      style={{ filter: `drop-shadow(0 0 6px ${pColor}40)` }}
-                    />
-                  </svg>
-                  <div className="percentile-gauge-value">
-                    <span className="percentile-number animated" style={{ color: pColor }}>
-                      {result.percentile}%
-                    </span>
-                    <span className="percentile-label">{t("calcResultPercentile")}</span>
-                  </div>
-                </div>
+              <div className="multi-results">
+                {results.map((r, i) => {
+                  if (!r) return null;
+                  const pNum = parseFloat(r.percentile);
+                  const pColor = getPercentileColor(pNum, gender);
+                  const label = r.measure === "Weight" ? t("measureWeight")
+                    : r.measure === "Height" ? t("measureHeight")
+                    : t("measureHeadCircumference");
+                  return (
+                    <div key={r.measure} className="multi-result-item">
+                      <MiniGauge percentile={pNum} color={pColor} size={80} />
+                      <div className="multi-result-info">
+                        <span className="multi-result-label">{label}</span>
+                        <span className="multi-result-percentile" style={{ color: pColor }}>
+                          {r.percentile}%
+                        </span>
+                        <span className="percentile-label">{t("calcResultPercentile")}</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="result-stats-row">
                 <div className="result-stat">
                   <span className="result-stat-label">{t("calcResultAge")}</span>
-                  <span className="result-stat-value">{result.months} {t("calcResultMonths")}</span>
+                  <span className="result-stat-value">{results.find(r => r)?.months} {t("calcResultMonths")}</span>
                 </div>
                 <div className="result-stat">
                   <span className="result-stat-label">{t("calcResultDays")}</span>
-                  <span className="result-stat-value">{result.days}</span>
+                  <span className="result-stat-value">{results.find(r => r)?.days}</span>
                 </div>
               </div>
             </>

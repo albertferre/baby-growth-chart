@@ -134,6 +134,7 @@ function AppContent() {
   const [measure, setMeasure] = useState("Weight");
   const [gender, setGender] = useState("Boys");
   const [data, setData] = useState(null);
+  const [allData, setAllData] = useState(null);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [theme, setTheme] = useState(() => {
     try {
@@ -166,6 +167,21 @@ function AppContent() {
       cancelled = true;
     };
   }, [gender, measure]);
+
+  // Load all 3 datasets for Calculator (combined form)
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      loadData(gender, "Weight"),
+      loadData(gender, "Height"),
+      loadData(gender, "Head Circumference"),
+    ]).then(([weightData, heightData, hcData]) => {
+      if (!cancelled) setAllData({ Weight: weightData, Height: heightData, "Head Circumference": hcData });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [gender]);
 
   // Translate measure and gender for display
   const getMeasureLabel = (m) => {
@@ -359,7 +375,7 @@ function AppContent() {
           <Routes>
             <Route
               path="/"
-              element={<Calculator data={data} measure={measure} gender={gender} />}
+              element={<Calculator allData={allData} gender={gender} />}
             />
             <Route
               path="/evolution"
