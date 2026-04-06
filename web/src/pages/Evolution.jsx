@@ -290,10 +290,10 @@ export default function Evolution({ data, measure, gender, activeProfileId, onPr
   const babyPercentiles = useMemo(() => {
     if (!effectiveData || effectiveData.length === 0) return null;
     return effectiveData
-      .filter((r) => r.day >= 0 && r.day < data.length)
+      .filter((r) => r.day >= 0 && Math.round(r.day) < data.length)
       .map((r) => ({
         day: r.day,
-        percentile: getPercentile(r.value, data[r.day]),
+        percentile: getPercentile(r.value, data[Math.round(r.day)]),
       }));
   }, [effectiveData, data]);
 

@@ -72,9 +72,9 @@ export function addMeasurement(profileId, { days, weight, height, hc, date }) {
   const entry = {
     id: Date.now().toString(36),
     days,
-    weight: weight || null,
-    height: height || null,
-    hc: hc || null,
+    weight: weight ?? null,
+    height: height ?? null,
+    hc: hc ?? null,
     date: date || new Date().toISOString().split("T")[0],
     createdAt: Date.now(),
   };

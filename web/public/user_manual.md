@@ -44,15 +44,15 @@ If you have a birth date configured, the calculator shows upcoming pediatric mil
 
 ### Measurement History
 
-A **History** section shows saved measurements for the active profile:
+Clicking on a recent history item opens a **modal dialog** with all saved measurements for the active profile:
 
-- View the date, age (in months or years), weight, height, and head circumference.
+- View the date, age (in months or years), weight, height, head circumference, and percentiles.
 - **Edit** a measurement by clicking the pencil icon.
 - **Delete** a measurement by clicking the trash icon.
 
 ### Recent History
 
-On the right side of the calculator, the last 3 measurements are shown with all recorded metrics (e.g. "8.2kg · 72cm · HC 45cm").
+In the bottom-right area of the calculator, the last 3 measurements are shown with all recorded metrics (e.g. "8.2kg · 72cm · HC 45cm").
 
 ## Evolution
 
@@ -83,7 +83,7 @@ The X-axis shows age in months, with "Birth" as the starting point.
 
 The right sidebar shows alerts if:
 - The **current percentile** is low or very low.
-- There has been a **significant percentile change** between measurements (rise or drop of more than 20 points).
+- There has been a **significant percentile change** between measurements (rise or drop of 20 points or more).
 
 ### Export Charts
 

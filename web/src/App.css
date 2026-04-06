@@ -953,7 +953,7 @@ body {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 9999px;
-  ring: 4px;
+  outline: 4px solid transparent;
 }
 
 .percentile-scale-marker-dot.error {

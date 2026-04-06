@@ -44,15 +44,15 @@ Si tens una data de naixement configurada, la calculadora mostra les pròximes f
 
 ### Historial de Mesures
 
-Una secció d'**Historial** mostra les mesures guardades del perfil actiu:
+Fent clic en una mesura de l'historial recent s'obre un **diàleg modal** amb totes les mesures guardades del perfil actiu:
 
-- Consulta la data, edat (en mesos o anys), pes, alçada i perímetre cranial.
+- Consulta la data, edat (en mesos o anys), pes, alçada, perímetre cranial i percentils.
 - **Edita** una mesura fent clic a la icona del llapis.
 - **Elimina** una mesura fent clic a la icona de la paperera.
 
 ### Historial Recent
 
-A la part dreta de la calculadora es mostren les últimes 3 mesures amb totes les mètriques registrades (p. ex. "8.2kg · 72cm · HC 45cm").
+A la part inferior dreta de la calculadora es mostren les últimes 3 mesures amb totes les mètriques registrades (p. ex. "8.2kg · 72cm · HC 45cm").
 
 ## Evolució
 
@@ -83,7 +83,7 @@ L'eix X mostra l'edat en mesos, amb "Naixement" com a punt d'inici.
 
 A la columna dreta es mostren alertes si:
 - El **percentil actual** és baix o molt baix.
-- Hi ha hagut un **canvi significatiu** de percentil entre mesures (pujada o baixada de més de 20 punts).
+- Hi ha hagut un **canvi significatiu** de percentil entre mesures (pujada o baixada de 20 punts o més).
 
 ### Exportar gràfics
 

@@ -44,15 +44,15 @@ Si tienes una fecha de nacimiento configurada, la calculadora muestra los próxi
 
 ### Historial de Medidas
 
-Una sección de **Historial** muestra las medidas guardadas del perfil activo:
+Haciendo clic en una medida del historial reciente se abre un **diálogo modal** con todas las medidas guardadas del perfil activo:
 
-- Consulta la fecha, edad (en meses o años), peso, altura y perímetro craneal.
+- Consulta la fecha, edad (en meses o años), peso, altura, perímetro craneal y percentiles.
 - **Edita** una medida haciendo clic en el icono del lápiz.
 - **Elimina** una medida haciendo clic en el icono de papelera.
 
 ### Historial Reciente
 
-En la parte derecha de la calculadora se muestran las últimas 3 medidas con todas las métricas registradas (ej. "8.2kg · 72cm · HC 45cm").
+En la parte inferior derecha de la calculadora se muestran las últimas 3 medidas con todas las métricas registradas (ej. "8.2kg · 72cm · HC 45cm").
 
 ## Evolución
 
@@ -83,7 +83,7 @@ El eje X muestra la edad en meses, con "Nacimiento" como punto de inicio.
 
 En la columna derecha se muestran alertas si:
 - El **percentil actual** es bajo o muy bajo.
-- Ha habido un **cambio significativo** de percentil entre medidas (subida o bajada de más de 20 puntos).
+- Ha habido un **cambio significativo** de percentil entre medidas (subida o bajada de 20 puntos o más).
 
 ### Exportar gráficos
 
