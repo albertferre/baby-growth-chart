@@ -21,10 +21,10 @@ export function getProfiles() {
   return loadProfiles();
 }
 
-export function createProfile(name, gender) {
+export function createProfile(name, gender, birthDate) {
   const profiles = loadProfiles();
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const profile = { id, name, gender, measurements: [], createdAt: Date.now() };
+  const profile = { id, name, gender, birthDate: birthDate || "", measurements: [], createdAt: Date.now() };
   profiles.push(profile);
   saveProfiles(profiles);
   return profile;
@@ -40,6 +40,26 @@ export function updateProfileName(id, name) {
   const p = profiles.find((p) => p.id === id);
   if (p) {
     p.name = name;
+    saveProfiles(profiles);
+  }
+}
+
+export function updateProfile(id, updates) {
+  const profiles = loadProfiles();
+  const p = profiles.find((p) => p.id === id);
+  if (p) {
+    if (updates.name !== undefined) p.name = updates.name;
+    if (updates.gender !== undefined) p.gender = updates.gender;
+    if (updates.birthDate !== undefined) p.birthDate = updates.birthDate;
+    saveProfiles(profiles);
+  }
+}
+
+export function updateProfileBirthDate(id, birthDate) {
+  const profiles = loadProfiles();
+  const p = profiles.find((p) => p.id === id);
+  if (p) {
+    p.birthDate = birthDate;
     saveProfiles(profiles);
   }
 }

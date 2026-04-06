@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink, useLocation } from "react-router
 import { loadData } from "./utils/data";
 import { LanguageProvider, useLanguage } from "./i18n/LanguageContext";
 import { LANGUAGES } from "./i18n/translations";
-import { getProfiles, createProfile, deleteProfile, getActiveProfileId, setActiveProfileId, getProfile } from "./utils/babyStore";
+import { getProfiles, createProfile, deleteProfile, getActiveProfileId, setActiveProfileId, getProfile, updateProfile } from "./utils/babyStore";
 import Calculator from "./pages/Calculator";
 import Evolution from "./pages/Evolution";
 import UserManual from "./pages/UserManual";
@@ -15,36 +15,10 @@ import "./App.css";
 const MEASURES = ["Weight", "Height", "Head Circumference"];
 const GENDERS = ["Boys", "Girls"];
 
-function BookIcon() {
+function GitHubIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z" />
-    </svg>
-  );
-}
-
-function CalculatorIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="2" width="16" height="20" rx="2" />
-      <line x1="8" y1="6" x2="16" y2="6" />
-      <line x1="8" y1="10" x2="8" y2="10.01" />
-      <line x1="12" y1="10" x2="12" y2="10.01" />
-      <line x1="16" y1="10" x2="16" y2="10.01" />
-      <line x1="8" y1="14" x2="8" y2="14.01" />
-      <line x1="12" y1="14" x2="12" y2="14.01" />
-      <line x1="16" y1="14" x2="16" y2="14.01" />
-      <line x1="8" y1="18" x2="16" y2="18" />
-    </svg>
-  );
-}
-
-function ChartIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 3v18h18" />
-      <path d="M7 16l4-8 4 4 4-6" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
     </svg>
   );
 }
@@ -57,121 +31,26 @@ function MedicalIcon() {
   );
 }
 
-function RulerIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" />
-      <path d="m14.5 12.5 2-2" />
-      <path d="m11.5 9.5 2-2" />
-      <path d="m8.5 6.5 2-2" />
-      <path d="m17.5 15.5 2-2" />
-    </svg>
-  );
-}
-
-function GenderIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="10" cy="8" r="5" />
-      <path d="M2 21a8 8 0 0 1 13.292-6" />
-      <circle cx="19" cy="19" r="3" />
-      <path d="m22 22-1.5-1.5" />
-    </svg>
-  );
-}
-
-function GitHubIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-    </svg>
-  );
-}
-
-function SunIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" />
-      <line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  );
-}
-
-function GlobeIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-    </svg>
-  );
-}
-
-function BabyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="5" />
-      <path d="M20 21a8 8 0 0 0-16 0" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
-
 function AppContent() {
   const { t, language, setLanguage } = useLanguage();
   const location = useLocation();
   const isCalculator = location.pathname === "/";
   const isManual = location.pathname === "/manual";
-  const showSettings = !isCalculator && !isManual;
+  const isEvolution = location.pathname === "/evolution";
   const [measure, setMeasure] = useState("Weight");
   const [gender, setGender] = useState("Boys");
   const [data, setData] = useState(null);
   const [allData, setAllData] = useState(null);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profiles, setProfiles] = useState(() => getProfiles());
   const [activeProfileId, setActiveProfile] = useState(() => getActiveProfileId());
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [newProfileName, setNewProfileName] = useState("");
+  const [newProfileGender, setNewProfileGender] = useState("Boys");
+  const [editingProfile, setEditingProfile] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editGender, setEditGender] = useState("Boys");
 
   const refreshProfiles = useCallback(() => {
     setProfiles(getProfiles());
@@ -179,10 +58,12 @@ function AppContent() {
 
   const handleCreateProfile = () => {
     if (!newProfileName.trim()) return;
-    const p = createProfile(newProfileName.trim(), gender);
+    const p = createProfile(newProfileName.trim(), newProfileGender);
     setActiveProfile(p.id);
     setActiveProfileId(p.id);
+    setGender(newProfileGender);
     setNewProfileName("");
+    setNewProfileGender("Boys");
     setShowProfileForm(false);
     refreshProfiles();
   };
@@ -201,34 +82,29 @@ function AppContent() {
     }
   };
 
+  const handleOpenEditProfile = (p) => {
+    setEditingProfile(p);
+    setEditName(p.name);
+    setEditGender(p.gender || "Boys");
+    setProfileMenuOpen(false);
+  };
+
+  const handleSaveEditProfile = () => {
+    if (!editingProfile || !editName.trim()) return;
+    updateProfile(editingProfile.id, { name: editName.trim(), gender: editGender });
+    if (activeProfileId === editingProfile.id) {
+      setGender(editGender);
+    }
+    setEditingProfile(null);
+    refreshProfiles();
+  };
+
   const handleSelectProfile = (id) => {
     setActiveProfile(id);
     setActiveProfileId(id);
-    // Sync gender from profile
     const p = getProfile(id);
     if (p && p.gender) setGender(p.gender);
-  };
-
-  const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem("baby-growth-theme") || "light";
-    } catch {
-      return "light";
-    }
-  });
-
-  // Apply theme to document
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    try {
-      localStorage.setItem("baby-growth-theme", theme);
-    } catch {
-      // Ignore storage errors
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setProfileMenuOpen(false);
   };
 
   useEffect(() => {
@@ -236,12 +112,9 @@ function AppContent() {
     loadData(gender, measure).then((d) => {
       if (!cancelled) setData(d);
     });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [gender, measure]);
 
-  // Load all 3 datasets for Calculator (combined form)
   useEffect(() => {
     let cancelled = false;
     Promise.all([
@@ -251,12 +124,9 @@ function AppContent() {
     ]).then(([weightData, heightData, hcData]) => {
       if (!cancelled) setAllData({ Weight: weightData, Height: heightData, "Head Circumference": hcData });
     });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [gender]);
 
-  // Translate measure and gender for display
   const getMeasureLabel = (m) => {
     if (m === "Weight") return t("measureWeight");
     if (m === "Height") return t("measureHeight");
@@ -267,190 +137,154 @@ function AppContent() {
     return g === "Boys" ? t("genderBoys") : t("genderGirls");
   };
 
+  const activeProfile = activeProfileId ? getProfile(activeProfileId) : null;
+  const profileInitial = activeProfile ? activeProfile.name.charAt(0).toUpperCase() : "?";
+
   return (
     <div className="layout">
       <a href="#main-content" className="skip-link">{t("skipToContent")}</a>
       <CoachMarks />
-      <aside className="sidebar" role="complementary" aria-label={t("sidebarLabel")}>
-        <div className="sidebar-brand">
-          <div className="sidebar-brand-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 3v18h18" />
-              <path d="M7 16l4-8 4 4 4-6" />
-            </svg>
-          </div>
-          <h2>{t("appTitle")}</h2>
-          <span className="app-version">v{__APP_VERSION__}</span>
-        </div>
 
-        <nav>
-          <NavLink to="/">
-            <span className="nav-icon"><CalculatorIcon /></span>
-            {t("navCalculator")}
-          </NavLink>
-          <NavLink to="/evolution">
-            <span className="nav-icon"><ChartIcon /></span>
-            {t("navEvolution")}
-          </NavLink>
-          <NavLink to="/manual">
-            <span className="nav-icon"><BookIcon /></span>
-            {t("navManual")}
-          </NavLink>
-        </nav>
-
-        {!isManual && <div className="sidebar-settings">
-          <div className="sidebar-settings-header">
-            <span>{t("labelSettings")}</span>
+      {/* Top Navigation Bar */}
+      <header className="top-navbar">
+        <div className="top-navbar-inner">
+          <div className="navbar-left">
+            <span className="navbar-brand">{t("appTitle")}</span>
+            <nav className="navbar-nav">
+              <NavLink to="/">{t("navCalculator")}</NavLink>
+              <NavLink to="/evolution">{t("navEvolution")}</NavLink>
+              <NavLink to="/manual">{t("navManual")}</NavLink>
+            </nav>
           </div>
-          <div className="sidebar-settings-content">
-            {showSettings && (
-              <div className="sidebar-section" data-coach="metric">
-                <span className="sidebar-section-label"><RulerIcon /> {t("labelMetric")}</span>
-                <div className="metric-toggle">
-                  {MEASURES.map((m) => (
-                    <button
-                      key={m}
-                      className={measure === m ? "active" : ""}
-                      onClick={() => setMeasure(m)}
-                    >
-                      {getMeasureLabel(m)}
-                    </button>
-                  ))}
+
+          <div className="navbar-right">
+            {/* Profile switcher */}
+            <div className="profile-dropdown">
+              <button className="profile-chip" onClick={() => setProfileMenuOpen(!profileMenuOpen)}>
+                <div className="profile-chip-avatar">{profileInitial}</div>
+                <div className="profile-chip-info">
+                  <span className="profile-chip-name">{activeProfile ? activeProfile.name : t("profileLabel")}</span>
+                  {activeProfile && (
+                    <span className="profile-chip-detail">
+                      {activeProfile.birthDate
+                        ? (() => {
+                            const days = Math.floor((new Date() - new Date(activeProfile.birthDate + "T00:00:00")) / (1000 * 60 * 60 * 24));
+                            const months = Math.floor(days / 30.5);
+                            return months < 24 ? `${months}m` : `${Math.floor(months / 12)}y`;
+                          })()
+                        : t("profileMeasurements", { count: activeProfile.measurements?.length || 0 })
+                      }
+                    </span>
+                  )}
                 </div>
-              </div>
-            )}
+                <span className="material-symbols-outlined profile-chip-arrow" style={{ fontSize: "1rem" }}>expand_more</span>
+              </button>
 
-            <div className="sidebar-section">
-              <span className="sidebar-section-label"><GenderIcon /> {t("labelGender")}</span>
-              <div className="gender-toggle">
-                {GENDERS.map((g) => (
-                  <button
-                    key={g}
-                    className={gender === g ? `active-${g.toLowerCase()}` : ""}
-                    onClick={() => setGender(g)}
-                  >
-                    {getGenderLabel(g)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="sidebar-section">
-              <span className="sidebar-section-label"><BabyIcon /> {t("profileLabel")}</span>
-              <div className="profile-list">
-                {profiles.map((p) => (
-                  <div key={p.id} className={`profile-item ${activeProfileId === p.id ? "active" : ""}`}>
-                    <button
-                      className="profile-item-btn"
-                      onClick={() => handleSelectProfile(p.id)}
-                    >
-                      <span className="profile-item-name">{p.name}</span>
-                      <span className="profile-item-count">
-                        {t("profileMeasurements", { count: p.measurements?.length || 0 })}
-                      </span>
-                    </button>
-                    <button
-                      className="profile-item-delete"
-                      onClick={(e) => { e.stopPropagation(); handleDeleteProfile(p.id); }}
-                      title={t("profileDelete")}
-                    >
-                      <TrashIcon />
+              {profileMenuOpen && (
+                <>
+                  <div className="profile-dropdown-backdrop" onClick={() => setProfileMenuOpen(false)} />
+                  <div className="profile-dropdown-menu">
+                    {profiles.map((p) => (
+                      <div key={p.id} style={{ display: "flex", alignItems: "center" }}>
+                        <button
+                          className={`profile-dropdown-item ${activeProfileId === p.id ? "active" : ""}`}
+                          onClick={() => handleSelectProfile(p.id)}
+                        >
+                          <span style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: "0.875rem", color: p.gender === "Girls" ? "var(--error)" : "var(--primary)" }}>
+                              {p.gender === "Girls" ? "female" : "male"}
+                            </span>
+                            {p.name}
+                          </span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--on-surface-variant)" }}>
+                            {p.measurements?.length || 0}
+                          </span>
+                        </button>
+                        <button
+                          className="profile-dropdown-item-delete"
+                          onClick={(e) => { e.stopPropagation(); handleOpenEditProfile(p); }}
+                          title={t("profileEdit")}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>edit</span>
+                        </button>
+                        <button
+                          className="profile-dropdown-item-delete"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteProfile(p.id); }}
+                          title={t("profileDelete")}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>delete</span>
+                        </button>
+                      </div>
+                    ))}
+                    <button className="profile-dropdown-add" onClick={() => { setShowProfileForm(true); setProfileMenuOpen(false); }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>add</span>
+                      {t("profileAdd")}
                     </button>
                   </div>
-                ))}
-                <button className="profile-add-btn" onClick={() => setShowProfileForm(true)}>
-                  <PlusIcon /> {t("profileAdd")}
-                </button>
-              </div>
+                </>
+              )}
+            </div>
+
+            {/* Language dropdown */}
+            <div className="language-dropdown" aria-label={t("languageSwitcherLabel")}>
+              <button
+                className="language-dropdown-trigger"
+                onClick={() => setLangMenuOpen(!langMenuOpen)}
+                aria-expanded={langMenuOpen}
+                aria-haspopup="listbox"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "1.25rem" }}>translate</span>
+                <span className="language-current">
+                  {LANGUAGES.find((l) => l.code === language)?.flag}
+                </span>
+              </button>
+              {langMenuOpen && (
+                <>
+                  <div className="language-dropdown-backdrop" onClick={() => setLangMenuOpen(false)} />
+                  <ul className="language-dropdown-menu" role="listbox">
+                    {LANGUAGES.map((lang) => (
+                      <li key={lang.code}>
+                        <button
+                          className={`language-dropdown-item ${language === lang.code ? "active" : ""}`}
+                          onClick={() => { setLanguage(lang.code); setLangMenuOpen(false); }}
+                          role="option"
+                          aria-selected={language === lang.code}
+                        >
+                          <span className="language-flag" aria-hidden="true">{lang.flag}</span>
+                          <span>{lang.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
           </div>
-        </div>}
-
-        <div className="medical-disclaimer">
-          <div className="medical-disclaimer-icon">
-            <MedicalIcon />
-          </div>
-          <div className="medical-disclaimer-content">
-            <strong>{t("medicalDisclaimerTitle")}</strong>
-            <p>{t("medicalDisclaimerText")}</p>
-          </div>
         </div>
+      </header>
 
-        <div className="data-source">
-          {t("dataSource")}{" "}
-          <a
-            href="https://www.who.int/tools/child-growth-standards/standards"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t("dataSourceLink")}
-          </a>
-        </div>
-
-        <div className="github-signature">
-          <a
-            href="https://github.com/albertferre"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <GitHubIcon />
-            <span>Made by albertferre</span>
-          </a>
-        </div>
-      </aside>
+      {/* Mobile bottom nav */}
+      <nav className="mobile-bottom-nav">
+        <NavLink to="/">
+          <span className="material-symbols-outlined">calculate</span>
+          <span>{t("navCalculator")}</span>
+        </NavLink>
+        <NavLink to="/evolution">
+          <span className="material-symbols-outlined">query_stats</span>
+          <span>{t("navEvolution")}</span>
+        </NavLink>
+        <NavLink to="/manual">
+          <span className="material-symbols-outlined">menu_book</span>
+          <span>{t("navManual")}</span>
+        </NavLink>
+      </nav>
 
       <main id="main-content" className="content" role="main">
-        <div className="top-controls">
-          <button
-            className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={theme === "light" ? t("switchToDark") : t("switchToLight")}
-            title={theme === "light" ? t("switchToDark") : t("switchToLight")}
-          >
-            {theme === "light" ? <MoonIcon /> : <SunIcon />}
-          </button>
-          <div className="language-dropdown" aria-label={t("languageSwitcherLabel")}>
-            <button
-              className="language-dropdown-trigger"
-              onClick={() => setLangMenuOpen(!langMenuOpen)}
-              aria-expanded={langMenuOpen}
-              aria-haspopup="listbox"
-            >
-              <GlobeIcon />
-              <span className="language-current">
-                {LANGUAGES.find((l) => l.code === language)?.flag}{" "}
-                {LANGUAGES.find((l) => l.code === language)?.name}
-              </span>
-              <ChevronDownIcon />
-            </button>
-            {langMenuOpen && (
-              <>
-                <div className="language-dropdown-backdrop" onClick={() => setLangMenuOpen(false)} />
-                <ul className="language-dropdown-menu" role="listbox">
-                  {LANGUAGES.map((lang) => (
-                    <li key={lang.code}>
-                      <button
-                        className={`language-dropdown-item ${language === lang.code ? "active" : ""}`}
-                        onClick={() => {
-                          setLanguage(lang.code);
-                          setLangMenuOpen(false);
-                        }}
-                        role="option"
-                        aria-selected={language === lang.code}
-                      >
-                        <span className="language-flag" aria-hidden="true">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-        </div>
-        {!isManual && <div className="mobile-settings">
-          <div className="mobile-settings-row">
-            {showSettings && (
-              <div className="metric-toggle">
+        {/* Settings bar */}
+        {!isManual && (
+          <div className="settings-bar">
+            {isEvolution && (
+              <div className="settings-toggle" data-coach="metric">
                 {MEASURES.map((m) => (
                   <button
                     key={m}
@@ -462,84 +296,45 @@ function AppContent() {
                 ))}
               </div>
             )}
-            <div className="gender-toggle">
-              {GENDERS.map((g) => (
-                <button
-                  key={g}
-                  className={gender === g ? `active-${g.toLowerCase()}` : ""}
-                  onClick={() => setGender(g)}
-                >
-                  {getGenderLabel(g)}
-                </button>
-              ))}
-            </div>
-            <div className="mobile-profile-selector">
-              <BabyIcon />
-              {profiles.length > 0 ? (
-                <select
-                  value={activeProfileId || ""}
-                  onChange={(e) => handleSelectProfile(e.target.value)}
-                  className="mobile-profile-select"
-                >
-                  <option value="">{t("profileLabel")}</option>
-                  {profiles.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              ) : (
-                <span className="mobile-profile-empty">{t("profileNoProfiles")}</span>
-              )}
-              <button className="mobile-profile-add" onClick={() => setShowProfileForm(true)} title={t("profileAdd")}>
-                <PlusIcon />
-              </button>
-            </div>
-          </div>
-        </div>}
-
-        {data ? (
-          <Routes>
-            <Route
-              path="/"
-              element={<Calculator allData={allData} gender={gender} activeProfileId={activeProfileId} onProfileUpdated={refreshProfiles} onRequestCreateProfile={() => setShowProfileForm(true)} />}
-            />
-            <Route
-              path="/evolution"
-              element={
-                <Evolution data={data} measure={measure} gender={gender} activeProfileId={activeProfileId} />
-              }
-            />
-            <Route path="/manual" element={<UserManual />} />
-          </Routes>
-        ) : (
-          <div className="loading">
-            <div className="loading-spinner" />
-            {t("loading")}
           </div>
         )}
 
-        <div className="mobile-footer">
-          <div className="data-source">
-            {t("dataSource")}{" "}
-            <a
-              href="https://www.who.int/tools/child-growth-standards/standards"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t("dataSourceLink")}
-            </a>
+        <Routes>
+          <Route
+            path="/"
+            element={allData ? <Calculator allData={allData} gender={gender} onGenderChange={setGender} activeProfileId={activeProfileId} onProfileUpdated={refreshProfiles} onRequestCreateProfile={() => setShowProfileForm(true)} /> : <div className="loading"><div className="loading-spinner" />{t("loading")}</div>}
+          />
+          <Route
+            path="/evolution"
+            element={data ? <Evolution data={data} measure={measure} gender={gender} activeProfileId={activeProfileId} onProfileUpdated={refreshProfiles} onRequestCreateProfile={() => setShowProfileForm(true)} /> : <div className="loading"><div className="loading-spinner" />{t("loading")}</div>}
+          />
+          <Route path="/manual" element={<UserManual />} />
+        </Routes>
+      </main>
+
+      {/* Footer */}
+      <footer className="app-footer">
+        <div className="app-footer-inner">
+          <div className="app-footer-brand">
+            <span className="navbar-brand">{t("appTitle")}</span>
+            <p>{t("medicalDisclaimerText")}</p>
           </div>
-          <div className="github-signature">
-            <a
-              href="https://github.com/albertferre"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <GitHubIcon />
-              <span>Made by albertferre</span>
-            </a>
+          <div className="app-footer-links">
+            <div className="app-footer-links-section">
+              <span className="app-footer-links-title">Platform</span>
+              <a href="https://www.who.int/tools/child-growth-standards/standards" target="_blank" rel="noopener noreferrer">{t("dataSourceLink")}</a>
+              <a href="https://www.aap.org/en/practice-management/bright-futures/bright-futures-in-clinical-practice/" target="_blank" rel="noopener noreferrer">AAP Bright Futures</a>
+              <a href="https://www.who.int/health-topics/complementary-feeding" target="_blank" rel="noopener noreferrer">WHO Infant Feeding</a>
+              <a href="https://www.who.int/publications/i/item/9241594233" target="_blank" rel="noopener noreferrer">WHO Motor Development Study</a>
+              <a href="https://github.com/albertferre" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+            <div className="app-footer-links-section">
+              <span className="app-footer-links-title">Support</span>
+              <a href="/manual">{t("navManual")}</a>
+            </div>
           </div>
         </div>
-      </main>
+      </footer>
 
       {/* Profile creation modal */}
       {showProfileForm && (
@@ -555,11 +350,60 @@ function AppContent() {
               onKeyDown={(e) => e.key === "Enter" && handleCreateProfile()}
               autoFocus
             />
+            <div className="settings-toggle" style={{ marginTop: "0.75rem", alignSelf: "center" }}>
+              {GENDERS.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  className={newProfileGender === g ? "active" : ""}
+                  onClick={() => setNewProfileGender(g)}
+                >
+                  {g === "Boys" ? t("genderBoy") : t("genderGirl")}
+                </button>
+              ))}
+            </div>
             <div className="profile-form-actions">
               <button className="profile-form-btn create" onClick={handleCreateProfile}>
                 {t("profileCreate")}
               </button>
               <button className="profile-form-btn cancel" onClick={() => { setShowProfileForm(false); setNewProfileName(""); }}>
+                {t("profileCancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profile edit modal */}
+      {editingProfile && (
+        <div className="modal-backdrop" onClick={() => setEditingProfile(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{t("profileEdit")}</h3>
+            <input
+              type="text"
+              className="profile-form-input"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSaveEditProfile()}
+              autoFocus
+            />
+            <div className="settings-toggle" style={{ marginTop: "0.75rem", alignSelf: "center" }}>
+              {GENDERS.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  className={editGender === g ? "active" : ""}
+                  onClick={() => setEditGender(g)}
+                >
+                  {g === "Boys" ? t("genderBoy") : t("genderGirl")}
+                </button>
+              ))}
+            </div>
+            <div className="profile-form-actions">
+              <button className="profile-form-btn create" onClick={handleSaveEditProfile}>
+                {t("profileSave")}
+              </button>
+              <button className="profile-form-btn cancel" onClick={() => setEditingProfile(null)}>
                 {t("profileCancel")}
               </button>
             </div>

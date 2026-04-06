@@ -5,33 +5,19 @@ import { useLanguage } from "../i18n/LanguageContext";
 const STORAGE_KEY = "baby-growth-coach-completed";
 
 const STEPS = [
-  // Sidebar steps
+  // Welcome
   {
-    target: ".sidebar-brand",
-    position: "right",
+    target: ".navbar-brand",
+    position: "bottom",
     titleKey: "coachWelcomeTitle",
     textKey: "coachWelcomeText",
     route: "/",
   },
   {
-    target: ".sidebar nav",
-    position: "right",
+    target: ".navbar-nav",
+    position: "bottom",
     titleKey: "coachNavTitle",
     textKey: "coachNavText",
-    route: "/",
-  },
-  {
-    target: "[data-coach='metric']",
-    position: "right",
-    titleKey: "coachMetricTitle",
-    textKey: "coachMetricText",
-    route: "/",
-  },
-  {
-    target: ".gender-toggle",
-    position: "right",
-    titleKey: "coachGenderTitle",
-    textKey: "coachGenderText",
     route: "/",
   },
   {
@@ -43,15 +29,22 @@ const STEPS = [
   },
   // Calculator steps
   {
-    target: ".age-mode-toggle",
+    target: ".profile-dropdown",
+    position: "bottom",
+    titleKey: "coachProfileTitle",
+    textKey: "coachProfileText",
+    route: "/",
+  },
+  {
+    target: ".age-tabs",
     position: "bottom",
     titleKey: "coachAgeInputTitle",
     textKey: "coachAgeInputText",
     route: "/",
   },
   {
-    target: "#measurement",
-    position: "bottom",
+    target: ".form-stack",
+    position: "right",
     titleKey: "coachMeasurementTitle",
     textKey: "coachMeasurementText",
     route: "/",
@@ -72,33 +65,26 @@ const STEPS = [
   },
   // Evolution steps
   {
-    target: ".dropzone",
-    position: "bottom",
-    titleKey: "coachUploadTitle",
-    textKey: "coachUploadText",
-    route: "/evolution",
-  },
-  {
-    target: ".help-toggle",
-    position: "right",
-    titleKey: "coachHelpTitle",
-    textKey: "coachHelpText",
-    route: "/evolution",
-  },
-  {
     target: ".plot-card",
     position: "top",
     titleKey: "coachChartTitle",
     textKey: "coachChartText",
     route: "/evolution",
   },
+  {
+    target: ".btn-register",
+    position: "bottom",
+    titleKey: "coachRegisterTitle",
+    textKey: "coachRegisterText",
+    route: "/evolution",
+  },
   // Final step
   {
-    target: ".medical-disclaimer",
-    position: "right",
+    target: ".navbar-brand",
+    position: "bottom",
     titleKey: "coachDisclaimerTitle",
     textKey: "coachDisclaimerText",
-    route: "/evolution",
+    route: "/",
   },
 ];
 
@@ -141,11 +127,16 @@ export default function CoachMarks() {
     }
   }, []);
 
-  // Navigate to the correct route for current step
+  // Skip steps that require a different route instead of forcing navigation
   useEffect(() => {
     if (!isVisible || !needsNavigation) return;
-    navigate(step.route);
-  }, [currentStep, isVisible, needsNavigation, navigate, step?.route]);
+    // Auto-skip to next step instead of hijacking navigation
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep((s) => s + 1);
+    } else {
+      handleComplete();
+    }
+  }, [currentStep, isVisible, needsNavigation]);
 
   // Update target position when step changes or after navigation
   useEffect(() => {
@@ -217,133 +208,118 @@ export default function CoachMarks() {
     }
   }, [currentStep]);
 
-  const handleSkip = useCallback(() => {
-    handleComplete();
-  }, [handleComplete]);
+  if (!isVisible || needsNavigation) return null;
 
-  if (!isVisible) return null;
-
-  // Show loading state while waiting for navigation or element
-  if (!targetPos || needsNavigation) {
-    return (
-      <div className="coach-overlay">
-        <div className="coach-backdrop-loading" />
-      </div>
-    );
-  }
-
-  const padding = 8;
+  const { position, titleKey, textKey } = STEPS[currentStep];
+  const progress = ((currentStep + 1) / STEPS.length) * 100;
 
   // Calculate tooltip position
   let tooltipStyle = {};
-  const tooltipOffset = 16;
-
-  switch (step.position) {
-    case "right":
-      tooltipStyle = {
-        top: targetPos.rect.top + targetPos.height / 2,
-        left: targetPos.rect.right + tooltipOffset,
-        transform: "translateY(-50%)",
-      };
-      break;
-    case "left":
-      tooltipStyle = {
-        top: targetPos.rect.top + targetPos.height / 2,
-        right: window.innerWidth - targetPos.rect.left + tooltipOffset,
-        transform: "translateY(-50%)",
-      };
-      break;
-    case "bottom":
-      tooltipStyle = {
-        top: targetPos.rect.bottom + tooltipOffset,
-        left: targetPos.rect.left + targetPos.width / 2,
-        transform: "translateX(-50%)",
-      };
-      break;
-    case "top":
-      tooltipStyle = {
-        bottom: window.innerHeight - targetPos.rect.top + tooltipOffset,
-        left: targetPos.rect.left + targetPos.width / 2,
-        transform: "translateX(-50%)",
-      };
-      break;
-    case "bottom-left":
-      tooltipStyle = {
-        top: targetPos.rect.bottom + tooltipOffset,
-        right: window.innerWidth - targetPos.rect.right,
-      };
-      break;
-    default:
-      tooltipStyle = {
-        top: targetPos.rect.bottom + tooltipOffset,
-        left: targetPos.rect.left,
-      };
+  if (targetPos) {
+    const gap = 12;
+    switch (position) {
+      case "right":
+        tooltipStyle = {
+          top: targetPos.top + targetPos.height / 2,
+          left: targetPos.left + targetPos.width + gap,
+          transform: "translateY(-50%)",
+        };
+        break;
+      case "left":
+        tooltipStyle = {
+          top: targetPos.top + targetPos.height / 2,
+          right: window.innerWidth - targetPos.left + gap,
+          transform: "translateY(-50%)",
+        };
+        break;
+      case "bottom":
+        tooltipStyle = {
+          top: targetPos.top + targetPos.height + gap,
+          left: targetPos.left + targetPos.width / 2,
+          transform: "translateX(-50%)",
+        };
+        break;
+      case "bottom-left":
+        tooltipStyle = {
+          top: targetPos.top + targetPos.height + gap,
+          right: window.innerWidth - targetPos.left - targetPos.width,
+        };
+        break;
+      case "top":
+        tooltipStyle = {
+          bottom: window.innerHeight - targetPos.rect.top + gap,
+          left: targetPos.left + targetPos.width / 2,
+          transform: "translateX(-50%)",
+        };
+        break;
+      default:
+        tooltipStyle = {
+          top: targetPos.top + targetPos.height + gap,
+          left: targetPos.left,
+        };
+    }
   }
 
   return (
     <div className="coach-overlay">
-      {/* Dark overlay with spotlight hole - less intrusive (0.5 opacity) */}
-      <svg className="coach-backdrop" width="100%" height="100%">
+      {/* Semi-transparent backdrop with spotlight */}
+      <svg className="coach-backdrop" width="100%" height="100%" onClick={handleComplete}>
         <defs>
           <mask id="spotlight-mask">
             <rect width="100%" height="100%" fill="white" />
-            <rect
-              x={targetPos.rect.left - padding}
-              y={targetPos.rect.top - padding}
-              width={targetPos.width + padding * 2}
-              height={targetPos.height + padding * 2}
-              rx="8"
-              fill="black"
-            />
+            {targetPos && (
+              <rect
+                x={targetPos.rect.left - 8}
+                y={targetPos.rect.top - 8}
+                width={targetPos.width + 16}
+                height={targetPos.height + 16}
+                rx="8"
+                fill="black"
+              />
+            )}
           </mask>
         </defs>
-        <rect
-          width="100%"
-          height="100%"
-          fill="rgba(0, 0, 0, 0.5)"
-          mask="url(#spotlight-mask)"
-        />
+        <rect width="100%" height="100%" fill="rgba(0,0,0,0.5)" mask="url(#spotlight-mask)" />
       </svg>
 
       {/* Spotlight border */}
-      <div
-        className="coach-spotlight"
-        style={{
-          top: targetPos.rect.top - padding,
-          left: targetPos.rect.left - padding,
-          width: targetPos.width + padding * 2,
-          height: targetPos.height + padding * 2,
-        }}
-      />
+      {targetPos && (
+        <div
+          className="coach-spotlight"
+          style={{
+            top: targetPos.rect.top - 4,
+            left: targetPos.rect.left - 4,
+            width: targetPos.width + 8,
+            height: targetPos.height + 8,
+          }}
+        />
+      )}
 
       {/* Tooltip */}
-      <div
-        className={`coach-tooltip coach-tooltip-${step.position}`}
-        style={{ ...tooltipStyle, maxWidth: 320 }}
-      >
-        <div className="coach-tooltip-header">
-          <h3>{t(step.titleKey)}</h3>
-          <span className="coach-step-indicator">
-            {currentStep + 1} / {STEPS.length}
-          </span>
-        </div>
-        <p>{t(step.textKey)}</p>
-        <div className="coach-tooltip-actions">
-          <button className="coach-btn-skip" onClick={handleSkip}>
-            {t("coachSkip")}
-          </button>
-          <div className="coach-btn-group">
-            {currentStep > 0 && (
-              <button className="coach-btn-prev" onClick={handlePrev}>
-                {t("coachPrev")}
-              </button>
-            )}
-            <button className="coach-btn-next" onClick={handleNext}>
-              {currentStep === STEPS.length - 1 ? t("coachFinish") : t("coachNext")}
+      {targetPos && (
+        <div className={`coach-tooltip coach-tooltip-${position}`} style={{ ...tooltipStyle, maxWidth: 320 }}>
+          <div className="coach-tooltip-header">
+            <h3>{t(titleKey)}</h3>
+            <span className="coach-step-indicator">{currentStep + 1}/{STEPS.length}</span>
+          </div>
+          <p>{t(textKey)}</p>
+          <div className="coach-tooltip-actions">
+            <button className="coach-btn-skip" onClick={handleComplete}>
+              {t("coachSkip")}
             </button>
+            <div className="coach-btn-group">
+              {currentStep > 0 && (
+                <button className="coach-btn-prev" onClick={handlePrev}>
+                  {t("coachPrev")}
+                </button>
+              )}
+              <button className="coach-btn-next" onClick={handleNext}>
+                {currentStep === STEPS.length - 1 ? t("coachFinish") : t("coachNext")}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

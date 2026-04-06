@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import Plot from "react-plotly.js";
 import { getPercentile } from "../utils/percentile";
-import { MEASURES_UNITS, MEASURES_INPUT } from "../utils/data";
+import { MEASURES_UNITS, MEASURES_INPUT, formatAgeDays } from "../utils/data";
 import { useLanguage } from "../i18n/LanguageContext";
-import { getProfile } from "../utils/babyStore";
+import { getProfile, addMeasurement } from "../utils/babyStore";
 import SEOHead from "../components/SEOHead";
 
 function linearInterpolate(arr) {
@@ -33,9 +33,7 @@ function parseExcel(file) {
         const sheet = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet);
         resolve(rows);
-      } catch (err) {
-        reject(err);
-      }
+      } catch (err) { reject(err); }
     };
     reader.onerror = reject;
     reader.readAsArrayBuffer(file);
@@ -101,43 +99,53 @@ function AlertTriangleIcon() {
 }
 
 function getPlotlyLayoutBase() {
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
   return {
     autosize: true,
-    font: { family: "Inter, sans-serif", size: 13, color: isDark ? "#a8a3b8" : "#5c566b" },
+    font: { family: "'Plus Jakarta Sans', sans-serif", size: 13, color: "#595c5e" },
     paper_bgcolor: "transparent",
     plot_bgcolor: "transparent",
     margin: { t: 48, r: 24, b: 56, l: 56 },
     xaxis: {
-      gridcolor: isDark ? "rgba(255,255,255,0.06)" : "#f3f0eb",
-      zerolinecolor: isDark ? "rgba(255,255,255,0.08)" : "#e8e4dd",
-      title: { text: "Days", font: { size: 12, color: isDark ? "#6e6880" : "#5c566b" } },
+      gridcolor: "#eef1f3",
+      zerolinecolor: "#e5e9eb",
+      title: { font: { size: 12, color: "#595c5e" } },
     },
     yaxis: {
-      gridcolor: isDark ? "rgba(255,255,255,0.06)" : "#f3f0eb",
-      zerolinecolor: isDark ? "rgba(255,255,255,0.08)" : "#e8e4dd",
+      gridcolor: "#eef1f3",
+      zerolinecolor: "#e5e9eb",
     },
     legend: {
       orientation: "h",
       y: -0.18,
       x: 0.5,
       xanchor: "center",
-      font: { size: 11, color: isDark ? "#a8a3b8" : "#5c566b" },
+      font: { size: 11, color: "#595c5e" },
     },
   };
 }
 
-export default function Evolution({ data, measure, gender, activeProfileId }) {
+function getZone(p) {
+  if (p < 3) return "veryLow";
+  if (p < 15) return "low";
+  if (p <= 85) return "normal";
+  if (p <= 97) return "high";
+  return "veryHigh";
+}
+
+export default function Evolution({ data, measure, gender, activeProfileId, onProfileUpdated, onRequestCreateProfile }) {
   const { t } = useLanguage();
   const [babyData, setBabyData] = useState(null);
   const [fileName, setFileName] = useState("");
   const [uploadError, setUploadError] = useState("");
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [registerValue, setRegisterValue] = useState("");
+  const [registerDate, setRegisterDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [showHelp, setShowHelp] = useState(false);
   const plotRef = useRef(null);
 
   const col = MEASURES_INPUT[measure];
   const unit = MEASURES_UNITS[measure];
-  const accentColor = gender === "Girls" ? "#ec4899" : "#3b82f6";
+  const accentColor = gender === "Girls" ? "#ec4899" : "#005da7";
 
   const profile = activeProfileId ? getProfile(activeProfileId) : null;
   const hasHistory = profile && profile.measurements && profile.measurements.length > 0;
@@ -146,16 +154,11 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
     hasHistory ? "history" : "file"
   );
 
-  // Sync dataSource when profile changes
   useEffect(() => {
-    if (hasHistory && !babyData) {
-      setDataSource("history");
-    } else if (!hasHistory && dataSource === "history") {
-      setDataSource("file");
-    }
+    if (hasHistory && !babyData) setDataSource("history");
+    else if (!hasHistory && dataSource === "history") setDataSource("file");
   }, [activeProfileId]);
 
-  // Build baby data from history
   const historyData = useMemo(() => {
     if (!profile || !profile.measurements || profile.measurements.length === 0) return null;
     const colMap = { Weight: "weight", Height: "height", "Head Circumference": "hc" };
@@ -168,11 +171,37 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
 
   const effectiveData = dataSource === "history" ? historyData : babyData;
 
-  // Translate measure and gender
   const getMeasureLabel = () => {
     if (measure === "Weight") return t("measureWeight");
     if (measure === "Height") return t("measureHeight");
     return t("measureHeadCircumference");
+  };
+
+  const handleRegisterMeasurement = () => {
+    if (!activeProfileId || !registerValue) return;
+    const val = parseFloat(registerValue);
+    if (isNaN(val) || val <= 0) return;
+
+    const birth = profile?.birthDate;
+    let days = 0;
+    if (birth) {
+      const birthDate = new Date(birth + "T00:00:00");
+      const measDate = new Date(registerDate + "T00:00:00");
+      days = Math.floor((measDate - birthDate) / (1000 * 60 * 60 * 24));
+    }
+
+    const colMap = { Weight: "weight", Height: "height", "Head Circumference": "hc" };
+    const field = colMap[measure];
+    addMeasurement(activeProfileId, {
+      days,
+      [field]: val,
+      date: registerDate,
+    });
+
+    setShowRegisterModal(false);
+    setRegisterValue("");
+    setRegisterDate(new Date().toISOString().split("T")[0]);
+    if (onProfileUpdated) onProfileUpdated();
   };
 
   const getGenderLabel = () => {
@@ -201,9 +230,7 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
     try {
       const rows = await parseExcel(file);
       const required = ["day", "h", "w", "hc"];
-      const missing = required.filter(
-        (c) => !Object.keys(rows[0] || {}).includes(c)
-      );
+      const missing = required.filter((c) => !Object.keys(rows[0] || {}).includes(c));
       if (missing.length) {
         setUploadError(t("evoErrorMissing", { cols: missing.join(", ") }));
         setBabyData(null);
@@ -213,9 +240,7 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
 
       const days = rows.map((r) => r.day);
       const values = linearInterpolate(rows.map((r) => r[col]));
-      setBabyData(
-        days.map((d, i) => ({ day: d, value: values[i] })).filter((r) => r.value != null)
-      );
+      setBabyData(days.map((d, i) => ({ day: d, value: values[i] })).filter((r) => r.value != null));
       setFileName(file.name);
     } catch {
       setUploadError(t("evoErrorParse"));
@@ -251,9 +276,9 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
   }
 
   const percentileCurves = useMemo(() => {
-    const days = data.map((r) => r.Day);
+    const months = data.map((r) => +(r.Day / 30.5).toFixed(2));
     return {
-      days,
+      months,
       P01: data.map((r) => r.P01),
       P25: data.map((r) => r.P25),
       P50: data.map((r) => r.P50),
@@ -272,7 +297,6 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
       }));
   }, [effectiveData, data]);
 
-  // Detect significant percentile changes (alerts)
   const alerts = useMemo(() => {
     if (!babyPercentiles || babyPercentiles.length < 2) return [];
     const result = [];
@@ -281,76 +305,124 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
       const curr = babyPercentiles[i].percentile;
       const diff = curr - prev;
       if (Math.abs(diff) >= 20) {
-        result.push({
-          type: diff < 0 ? "drop" : "rise",
-          prev: prev.toFixed(0),
-          current: curr.toFixed(0),
-          day: babyPercentiles[i].day,
-        });
+        result.push({ type: diff < 0 ? "drop" : "rise", prev: prev.toFixed(0), current: curr.toFixed(0), day: babyPercentiles[i].day });
       }
     }
     return result;
   }, [babyPercentiles]);
 
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  const pCurveStyles = {
-    P01: { color: isDark ? "#3d3756" : "#d4d0e0", dash: "dot", width: 1 },
-    P25: { color: isDark ? "#5c566b" : "#a8a3b8", dash: "dash", width: 1.5 },
-    P50: { color: isDark ? "#8f899e" : "#7c7694", width: 2 },
-    P75: { color: isDark ? "#5c566b" : "#a8a3b8", dash: "dash", width: 1.5 },
-    P99: { color: isDark ? "#3d3756" : "#d4d0e0", dash: "dot", width: 1 },
-  };
+  // Latest percentile for sidebar
+  const latestPercentile = babyPercentiles && babyPercentiles.length > 0
+    ? babyPercentiles[babyPercentiles.length - 1].percentile
+    : null;
 
-  const traces = Object.entries(pCurveStyles).map(([key, style]) => ({
-    x: percentileCurves.days,
-    y: percentileCurves[key],
-    name: key,
-    type: "scatter",
-    mode: "lines",
-    line: { ...style, shape: "vh" },
-    hovertemplate: `${key}: %{y:.1f} ${unit}<extra></extra>`,
-  }));
+  const latestZone = latestPercentile !== null ? getZone(latestPercentile) : null;
+  const isAlert = latestZone && latestZone !== "normal" && latestZone !== "high";
+
+  const whoBlue = "#4a90d9";
+  const whoBlueLight = "rgba(74, 144, 217, 0.08)";
+  const whoBlueMed = "rgba(74, 144, 217, 0.15)";
+
+  const traces = [
+    // P01-P99 shaded band
+    {
+      x: percentileCurves.months,
+      y: percentileCurves.P01,
+      type: "scatter",
+      mode: "lines",
+      line: { color: "transparent", width: 0 },
+      showlegend: false,
+      hoverinfo: "skip",
+    },
+    {
+      x: percentileCurves.months,
+      y: percentileCurves.P99,
+      type: "scatter",
+      mode: "lines",
+      line: { color: "transparent", width: 0 },
+      fill: "tonexty",
+      fillcolor: whoBlueLight,
+      showlegend: false,
+      hoverinfo: "skip",
+    },
+    // P25-P75 shaded band
+    {
+      x: percentileCurves.months,
+      y: percentileCurves.P25,
+      type: "scatter",
+      mode: "lines",
+      line: { color: "transparent", width: 0 },
+      showlegend: false,
+      hoverinfo: "skip",
+    },
+    {
+      x: percentileCurves.months,
+      y: percentileCurves.P75,
+      type: "scatter",
+      mode: "lines",
+      line: { color: "transparent", width: 0 },
+      fill: "tonexty",
+      fillcolor: whoBlueMed,
+      showlegend: false,
+      hoverinfo: "skip",
+    },
+    // P50 median line
+    {
+      x: percentileCurves.months,
+      y: percentileCurves.P50,
+      name: t("evoWhoAverage"),
+      type: "scatter",
+      mode: "lines",
+      line: { color: whoBlue, width: 2.5 },
+      hovertemplate: `${t("evoWhoAverage")}: %{y:.1f} ${unit}<extra></extra>`,
+    },
+  ];
 
   if (effectiveData && effectiveData.length > 0) {
     traces.push({
-      x: effectiveData.map((r) => r.day),
+      x: effectiveData.map((r) => +(r.day / 30.5).toFixed(2)),
       y: effectiveData.map((r) => r.value),
       name: profile ? profile.name : t("evoBaby"),
       type: "scatter",
       mode: "lines+markers",
-      line: { color: accentColor, width: 2.5 },
-      marker: { color: accentColor, size: 5 },
-      hovertemplate: `Day %{x}: %{y:.2f} ${unit}<extra></extra>`,
+      line: { color: isAlert ? "#fb5151" : accentColor, width: 2.5 },
+      marker: { color: isAlert ? "#fb5151" : accentColor, size: 5 },
+      hovertemplate: `%{x:.1f}m: %{y:.2f} ${unit}<extra></extra>`,
     });
   }
 
+  const profileName = profile ? profile.name : "";
+
   return (
     <div className="page">
-      <SEOHead
-        title={t("seoEvolutionTitle")}
-        description={t("seoEvolutionDescription")}
-        path="/evolution"
-      />
+      <SEOHead title={t("seoEvolutionTitle")} description={t("seoEvolutionDescription")} path="/evolution" />
+
+      {/* Hero Header */}
       <div className="evolution-header">
-        <div className="page-header" style={{ marginBottom: 0 }}>
-          <h1>{t("evoTitle", { measure: getMeasureLabel() })}</h1>
+        <div className="evolution-hero">
+          <h1>{profileName ? t("evoTitleProfile", { name: profileName }) : t("evoTitle")}</h1>
           <p>{t("evoSubtitle", { gender: getGenderLabel() })}</p>
         </div>
+        {activeProfileId ? (
+          <button className="btn-register" onClick={() => setShowRegisterModal(true)}>
+            <span className="material-symbols-outlined" style={{ fontSize: "1.125rem" }}>add</span>
+            {t("evoRegister", { measure: getMeasureLabel() })}
+          </button>
+        ) : onRequestCreateProfile && (
+          <button className="btn-register" onClick={onRequestCreateProfile}>
+            <span className="material-symbols-outlined" style={{ fontSize: "1.125rem" }}>person_add</span>
+            {t("profileAdd")}
+          </button>
+        )}
 
         <div className="upload-actions">
           {hasHistory && (
             <div className="data-source-toggle">
               <span className="data-source-label">{t("evoDataSource")}:</span>
-              <button
-                className={`data-source-btn ${dataSource === "file" ? "active" : ""}`}
-                onClick={() => { setDataSource("file"); }}
-              >
+              <button className={`data-source-btn ${dataSource === "file" ? "active" : ""}`} onClick={() => setDataSource("file")}>
                 {t("evoSourceFile")}
               </button>
-              <button
-                className={`data-source-btn ${dataSource === "history" ? "active" : ""}`}
-                onClick={handleUseHistory}
-              >
+              <button className={`data-source-btn ${dataSource === "history" ? "active" : ""}`} onClick={handleUseHistory}>
                 {t("evoSourceHistory")} ({profile.measurements.length})
               </button>
             </div>
@@ -363,20 +435,10 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
                   <input type="file" accept=".xls,.xlsx" onChange={handleFileUpload} />
                   {fileName ? <CheckIcon /> : <UploadIcon />}
                   <span className="dropzone-text">
-                    {fileName ? (
-                      fileName
-                    ) : (
-                      <>
-                        <strong>{t("evoUpload")}</strong> {t("evoUploadHint")}
-                      </>
-                    )}
+                    {fileName ? fileName : (<><strong>{t("evoUpload")}</strong> {t("evoUploadHint")}</>)}
                   </span>
                 </div>
-                {fileName && (
-                  <button className="btn-clear" onClick={handleClearData} title="Clear data">
-                    &times;
-                  </button>
-                )}
+                {fileName && <button className="btn-clear" onClick={handleClearData} title="Clear data">&times;</button>}
               </div>
               <button className="btn-template" onClick={downloadTemplate}>
                 <DownloadIcon /> {t("evoDownloadTemplate")}
@@ -385,20 +447,14 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
           )}
 
           {dataSource === "history" && !hasHistory && (
-            <div className="evo-no-history">
-              <p>{t("evoNoHistory")}</p>
-            </div>
+            <div className="evo-no-history"><p>{t("evoNoHistory")}</p></div>
           )}
         </div>
       </div>
 
       {dataSource === "file" && (
         <>
-          <button
-            className="help-toggle"
-            onClick={() => setShowHelp(!showHelp)}
-            aria-expanded={showHelp}
-          >
+          <button className="help-toggle" onClick={() => setShowHelp(!showHelp)} aria-expanded={showHelp}>
             <InfoIcon />
             <span>{showHelp ? t("evoHelpHide") : t("evoHelpToggle")}</span>
           </button>
@@ -407,7 +463,6 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
             <div className="help-panel">
               <h3>{t("evoHelpTitle")}</h3>
               <p dangerouslySetInnerHTML={{ __html: t("evoHelpIntro") }} />
-
               <table className="help-table">
                 <thead>
                   <tr>
@@ -417,35 +472,16 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td><code>day</code></td>
-                    <td>{t("evoHelpDayDesc")}</td>
-                    <td>0, 30, 60, 90...</td>
-                  </tr>
-                  <tr>
-                    <td><code>w</code></td>
-                    <td>{t("evoHelpWeightDesc")}</td>
-                    <td>3.2, 4.5, 5.8...</td>
-                  </tr>
-                  <tr>
-                    <td><code>h</code></td>
-                    <td>{t("evoHelpHeightDesc")}</td>
-                    <td>50, 54, 58...</td>
-                  </tr>
-                  <tr>
-                    <td><code>hc</code></td>
-                    <td>{t("evoHelpHcDesc")}</td>
-                    <td>35, 37, 39...</td>
-                  </tr>
+                  <tr><td><code>day</code></td><td>{t("evoHelpDayDesc")}</td><td>0, 30, 60, 90...</td></tr>
+                  <tr><td><code>w</code></td><td>{t("evoHelpWeightDesc")}</td><td>3.2, 4.5, 5.8...</td></tr>
+                  <tr><td><code>h</code></td><td>{t("evoHelpHeightDesc")}</td><td>50, 54, 58...</td></tr>
+                  <tr><td><code>hc</code></td><td>{t("evoHelpHcDesc")}</td><td>35, 37, 39...</td></tr>
                 </tbody>
               </table>
-
               <h4>{t("evoHelpExample")}</h4>
               <div className="help-example">
                 <table>
-                  <thead>
-                    <tr><th>day</th><th>w</th><th>h</th><th>hc</th></tr>
-                  </thead>
+                  <thead><tr><th>day</th><th>w</th><th>h</th><th>hc</th></tr></thead>
                   <tbody>
                     <tr><td>0</td><td>3.2</td><td>50</td><td>35</td></tr>
                     <tr><td>30</td><td>4.1</td><td>54</td><td>37</td></tr>
@@ -454,7 +490,6 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
                   </tbody>
                 </table>
               </div>
-
               <div className="help-tips">
                 <h4>{t("evoHelpTips")}</h4>
                 <ul>
@@ -476,84 +511,239 @@ export default function Evolution({ data, measure, gender, activeProfileId }) {
         </div>
       )}
 
-      {/* Alerts for significant percentile changes */}
-      {alerts.length > 0 && (
-        <div className="evo-alerts">
-          <div className="evo-alerts-title">
-            <AlertTriangleIcon />
-            <span>{t("alertDropTitle")}</span>
-          </div>
-          {alerts.map((a, i) => (
-            <div key={i} className={`evo-alert evo-alert-${a.type}`}>
-              {a.type === "drop"
-                ? t("alertDrop", { measure: getMeasureLabel(), prev: a.prev, current: a.current })
-                : t("alertRise", { measure: getMeasureLabel(), prev: a.prev, current: a.current })}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="plot-card">
-        {(effectiveData && effectiveData.length > 0) && (
-          <button className="btn-export-chart" onClick={exportChart} title={t("evoExportChart")}>
-            <DownloadIcon />
-            <span>{t("evoExportChart")}</span>
-          </button>
-        )}
-        <Plot
-          ref={plotRef}
-          data={traces}
-          layout={{
-            ...getPlotlyLayoutBase(),
-            title: {
-              text: t("evoChartTitle", { measure: getMeasureLabel(), gender: gender === "Boys" ? t("genderBoys") : t("genderGirls") }),
-              font: { size: 15, color: document.documentElement.getAttribute("data-theme") === "dark" ? "#f0eef5" : "#1a1625", family: "Inter, sans-serif", weight: 700 },
-            },
-            yaxis: {
-              ...getPlotlyLayoutBase().yaxis,
-              title: { text: unit, font: { size: 12, color: document.documentElement.getAttribute("data-theme") === "dark" ? "#6e6880" : "#5c566b" } },
-            },
-          }}
-          config={{ displayModeBar: false, responsive: true }}
-          useResizeHandler
-          className="plot"
-        />
-      </div>
-
-      {babyPercentiles && (
+      {/* Main grid: Chart + Sidebar */}
+      <div className="bento-grid bento-grid-8-4">
+        {/* Chart */}
         <div className="plot-card">
+          {(effectiveData && effectiveData.length > 0) && (
+            <button className="btn-export-chart" onClick={exportChart} title={t("evoExportChart")}>
+              <DownloadIcon />
+              <span>{t("evoExportChart")}</span>
+            </button>
+          )}
           <Plot
-            data={[
-              {
-                x: babyPercentiles.map((r) => r.day),
-                y: babyPercentiles.map((r) => r.percentile),
-                type: "bar",
-                marker: {
-                  color: babyPercentiles.map((r) =>
-                    `${accentColor}${Math.round(40 + (r.percentile / 100) * 60).toString(16).padStart(2, "0")}`
-                  ),
-                  line: { width: 0 },
-                },
-                hovertemplate: "Day %{x}: %{y:.1f}%<extra></extra>",
-              },
-            ]}
+            ref={plotRef}
+            data={traces}
             layout={{
               ...getPlotlyLayoutBase(),
               title: {
-                text: t("evoChartPercentile"),
-                font: { size: 15, color: document.documentElement.getAttribute("data-theme") === "dark" ? "#f0eef5" : "#1a1625", family: "Inter, sans-serif", weight: 700 },
+                text: t("evoChartTitle", { measure: getMeasureLabel(), gender: gender === "Boys" ? t("genderBoys") : t("genderGirls") }),
+                font: { size: 15, color: "#2c2f31", family: "'Plus Jakarta Sans', sans-serif", weight: 700 },
+              },
+              xaxis: {
+                ...getPlotlyLayoutBase().xaxis,
+                title: { text: t("calcResultMonths"), font: { size: 12, color: "#595c5e" } },
+                tickvals: [0, ...Array.from({ length: Math.ceil(percentileCurves.months[percentileCurves.months.length - 1] / 6) }, (_, i) => (i + 1) * 6)],
+                ticktext: [t("evoBirth"), ...Array.from({ length: Math.ceil(percentileCurves.months[percentileCurves.months.length - 1] / 6) }, (_, i) => `${(i + 1) * 6}`)],
               },
               yaxis: {
                 ...getPlotlyLayoutBase().yaxis,
-                title: { text: `${getMeasureLabel()} percentile`, font: { size: 12, color: document.documentElement.getAttribute("data-theme") === "dark" ? "#6e6880" : "#5c566b" } },
-                range: [0, 105],
+                title: { text: unit, font: { size: 12, color: "#595c5e" } },
               },
-              showlegend: false,
             }}
             config={{ displayModeBar: false, responsive: true }}
             useResizeHandler
             className="plot"
           />
+        </div>
+
+        {/* Sidebar stats */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          {/* Percentile alert/info card */}
+          {latestPercentile !== null && (
+            isAlert ? (
+              <div className="alert-card">
+                <div className="alert-card-header">
+                  <div>
+                    <p className="alert-card-label">{t("interpZoneLow")}</p>
+                    <h3 className="alert-card-title">
+                      {t("calcResultPercentile")} {Math.round(latestPercentile)}
+                      <sup style={{ fontSize: "0.5em" }}>th</sup>
+                    </h3>
+                  </div>
+                  <span className="material-symbols-outlined" style={{ fontSize: "1.5rem", color: "var(--error)" }}>warning</span>
+                </div>
+                <p className="alert-card-text">{t("summarySomeConcern")}</p>
+                <div className="percentile-scale">
+                  <div className="percentile-scale-labels">
+                    <span>P0</span><span>P50</span><span>P100</span>
+                  </div>
+                  <div className="percentile-scale-bar">
+                    <div className="percentile-scale-marker" style={{ left: `${latestPercentile}%` }}>
+                      <div className="percentile-scale-marker-dot error" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="card">
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+                  <div className="card-header-icon primary">
+                    <span className="material-symbols-outlined">monitoring</span>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--on-surface-variant)" }}>{getMeasureLabel()}</p>
+                    <h4 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--on-surface)" }}>
+                      {t("calcResultPercentile")} {Math.round(latestPercentile)}<sup style={{ fontSize: "0.5em" }}>th</sup>
+                    </h4>
+                  </div>
+                </div>
+                <div className="metric-card-percentile">
+                  <span className="metric-card-percentile-label">{t("calcResultPercentile")} {Math.round(latestPercentile)}º</span>
+                  <span className="metric-card-percentile-badge normal">{t("interpZoneNormal")}</span>
+                </div>
+                <div className="percentile-scale" style={{ marginTop: "0.75rem" }}>
+                  <div className="percentile-scale-bar">
+                    <div className="percentile-scale-marker" style={{ left: `${latestPercentile}%` }}>
+                      <div className="percentile-scale-marker-dot primary" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          )}
+
+          {/* Percentile change alerts */}
+          {alerts.length > 0 && (
+            <div className="alert-card">
+              <div className="alert-card-header">
+                <div>
+                  <p className="alert-card-label">{t("alertDropTitle")}</p>
+                  <h3 className="alert-card-title">
+                    P{alerts[0].prev}<sup style={{ fontSize: "0.5em" }}>th</sup> → P{alerts[0].current}<sup style={{ fontSize: "0.5em" }}>th</sup>
+                  </h3>
+                </div>
+                <span className="material-symbols-outlined" style={{ fontSize: "1.5rem", color: "var(--error)" }}>trending_down</span>
+              </div>
+              {alerts.map((a, i) => (
+                <p key={i} className="alert-card-text" style={i > 0 ? { marginTop: "0.5rem" } : undefined}>
+                  {a.type === "drop"
+                    ? t("alertDrop", { measure: getMeasureLabel(), prev: a.prev, current: a.current })
+                    : t("alertRise", { measure: getMeasureLabel(), prev: a.prev, current: a.current })}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {/* Latest measurement card */}
+          {effectiveData && effectiveData.length > 0 && (() => {
+            const last = effectiveData[effectiveData.length - 1];
+            const ageLabel = formatAgeDays(last.day, t("ageYears"));
+            return (
+              <div className="card">
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                  <div className="card-header-icon primary">
+                    <span className="material-symbols-outlined">straighten</span>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--on-surface-variant)" }}>{t("evoLatestMeasurement")}</p>
+                    <h4 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--on-surface)" }}>
+                      {last.value} <span style={{ fontSize: "0.875rem", fontWeight: 400 }}>{unit}</span>
+                    </h4>
+                  </div>
+                </div>
+                <p style={{ fontSize: "0.8125rem", color: "var(--on-surface-variant)" }}>
+                  {profileName ? `${profileName} · ` : ""}{ageLabel}
+                </p>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+
+      {/* Measurement History Table */}
+      {hasHistory && dataSource === "history" && (
+        <section style={{ marginTop: "2rem" }}>
+          <h2 style={{ fontSize: "1.375rem", fontWeight: 700, color: "var(--on-surface)", marginBottom: "1.5rem" }}>{t("historyTitle")}</h2>
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            <div className="history-table-wrapper">
+              <table className="history-table">
+                <thead>
+                  <tr>
+                    <th>{t("historyDate")}</th>
+                    <th>{t("historyAge")}</th>
+                    <th>{t("measureWeight")}</th>
+                    <th>{t("measureHeight")}</th>
+                    <th>{t("calcResultPercentile")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {profile.measurements.map((m, idx) => {
+                    const colMap = { Weight: "weight", Height: "height", "Head Circumference": "hc" };
+                    const field = colMap[measure];
+                    const val = m[field];
+                    let perc = null;
+                    let zone = null;
+                    if (val != null && m.days < data.length) {
+                      perc = getPercentile(val, data[m.days]);
+                      zone = getZone(perc);
+                    }
+                    const isError = zone && zone !== "normal" && zone !== "high";
+                    return (
+                      <tr key={m.id || idx}>
+                        <td className="font-semibold">{m.date || "—"}</td>
+                        <td className="text-muted">{formatAgeDays(m.days, t("ageYears"))}</td>
+                        <td className="font-bold">{m.weight ?? "—"} {m.weight ? "kg" : ""}</td>
+                        <td>{m.height ?? "—"} {m.height ? "cm" : ""}</td>
+                        <td>
+                          {perc !== null ? (
+                            <div className="history-percentile-indicator">
+                              <span className={`history-percentile-value ${isError ? "error" : "primary"}`}>
+                                {Math.round(perc)}º
+                              </span>
+                              <div className="history-percentile-bar">
+                                <div className={`history-percentile-dot ${isError ? "error" : "primary"}`} style={{ left: `${perc}%` }} />
+                              </div>
+                            </div>
+                          ) : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Register measurement modal */}
+      {showRegisterModal && (
+        <div className="modal-backdrop" onClick={() => setShowRegisterModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{t("evoRegister", { measure: getMeasureLabel() })}</h3>
+            <div className="form-group" style={{ marginTop: "0.75rem" }}>
+              <label className="form-label">{getMeasureLabel()} ({unit})</label>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className="profile-form-input"
+                placeholder={measure === "Weight" ? "7.8" : "68.0"}
+                value={registerValue}
+                onChange={(e) => setRegisterValue(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="form-group" style={{ marginTop: "0.75rem" }}>
+              <label className="form-label">{t("historyDate")}</label>
+              <input
+                type="date"
+                className="profile-form-input"
+                value={registerDate}
+                max={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setRegisterDate(e.target.value)}
+              />
+            </div>
+            <div className="profile-form-actions">
+              <button className="profile-form-btn create" onClick={handleRegisterMeasurement}>
+                {t("profileSaveToHistory")}
+              </button>
+              <button className="profile-form-btn cancel" onClick={() => setShowRegisterModal(false)}>
+                {t("profileCancel")}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
