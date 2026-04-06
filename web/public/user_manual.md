@@ -1,87 +1,97 @@
 # User Manual
 
-This manual explains how to use Baby Growth Chart, a web application for visualizing and calculating growth percentiles based on [WHO Child Growth Standards](https://www.who.int/tools/child-growth-standards/standards) for children aged 0–5 years.
+This manual explains how to use Baby Growth Chart, a web application for visualizing and calculating growth percentiles based on the [WHO Child Growth Standards](https://www.who.int/tools/child-growth-standards/standards) for children aged 0 to 5 years.
 
 ## Introduction
 
-The app provides three main sections, accessible from the sidebar (or top navigation on mobile):
+The app has three main sections, accessible from the top navigation bar (or bottom bar on mobile):
 
 1. **Calculator** — Calculate growth percentiles for weight, height, and head circumference simultaneously.
 2. **Evolution** — Visualize growth over time with interactive charts using uploaded data or saved history.
 3. **User Manual** — This page.
 
-You can change the **gender** (Boys or Girls), the **language** (English, Spanish, Catalan), and the **theme** (light or dark) at any time. The **metric** selector (Weight, Height, Head Circumference) is only shown on the Evolution page, since the Calculator always displays all three measurements. Settings are hidden on this page.
+You can change the **language** (English, Spanish, Catalan) at any time from the language selector in the top bar.
 
 ## Baby Profiles
 
-You can create profiles for one or more babies from the sidebar (or the profile selector on mobile):
+You can create and manage profiles for one or more babies from the profile selector in the top bar:
 
-1. Click **"Add baby"** and enter the baby's name.
-2. Select the active profile by clicking on it — this is used to save and retrieve measurement history.
+1. Click the profile selector and press **"Add baby"**. Enter the name and select the gender (boy or girl).
+2. Select the active profile by clicking on it — it's used to save and retrieve measurement history, and the gender is automatically applied to calculations.
 3. You can create multiple profiles (e.g. for twins) and switch between them.
-4. Delete a profile by clicking the trash icon next to it.
-5. On mobile, use the **profile dropdown** in the settings bar to switch between profiles.
+4. **Edit** a profile by clicking the pencil icon to change the name or gender.
+5. **Delete** a profile by clicking the trash icon.
+
+When a profile is active, the gender selector doesn't appear in the calculator since the profile's gender is used. Without a profile, you can select the gender directly in the measurement form.
 
 ## Calculator
 
-The Calculator lets you find out which WHO percentile your baby's measurements fall into.
+The Calculator lets you know which WHO percentile your baby's measurements fall into.
 
-1. **Choose the age input method** by clicking the collapsible selector: birth date (saved automatically for future visits), age in days, or age in months.
-2. **Enter one or more measurements** — weight (kg), height (cm), and/or head circumference (cm). All three fields are always visible; fill in whichever you have.
-3. **Press Calculate.** The results show:
-   - A **zone bar** for each measurement with a marker indicating where your baby falls (color-coded: green = normal, yellow = low/high, red = very low/very high).
-   - The **percentile value** highlighted in bold within a descriptive text explaining what it means.
-   - An **interpretation badge** (e.g. "Within normal range", "Below average").
-   - A **summary message** with an overall assessment of your baby's growth.
-   - The baby's **age** in months and days.
-4. **Save** — If you have an active baby profile, click the Save button. You will be asked to confirm the date of the measurement before saving.
-5. **Share** — Click the Share button to share the results via WhatsApp, email, or other apps (on mobile), or copy to clipboard (on desktop).
-6. **Export** — Click the Export button to download the result as a PNG image.
+1. **Choose the age input method** using the tabs: birth date (saved automatically), age in days, or age in months.
+2. **Enter one or more measurements** — weight (kg), height (cm), and/or head circumference (cm). Fill in whichever you have.
+3. **Press Calculate.** Results show:
+   - A **progress bar** for each measurement with a zone indicator (normal, low, high, etc.).
+   - The **percentile value** in large format.
+   - A **status label** with icon indicating the zone.
+4. **Save** — If you have an active profile, click the Save button below the results. You'll be asked to confirm the measurement date.
+5. **Create profile** — If no profile is active, a button appears to create one so you can save measurements.
+6. **Share / Export** — Use the buttons below results to share or download as a PNG image.
+
+### Upcoming Milestones
+
+If you have a birth date configured, the calculator shows upcoming pediatric milestones (checkups, nutrition, motor development) with links to official sources.
 
 ### Measurement History
 
-Below the results, a collapsible **Measurement History** section shows all saved measurements for the active profile in a table:
+Clicking on a recent history item opens a **modal dialog** with all saved measurements for the active profile:
 
-- View the date, age, weight, height, and head circumference of each saved measurement.
-- **Edit** a measurement by clicking the pencil icon — the row becomes editable.
+- View the date, age (in months or years), weight, height, head circumference, and percentiles.
+- **Edit** a measurement by clicking the pencil icon.
 - **Delete** a measurement by clicking the trash icon.
+
+### Recent History
+
+In the bottom-right area of the calculator, the last 3 measurements are shown with all recorded metrics (e.g. "8.2kg · 72cm · HC 45cm").
 
 ## Evolution
 
-The Evolution page displays interactive Plotly charts with the WHO percentile curves (P01, P25, P50, P75, P99) for the selected metric and gender.
+The Evolution page shows interactive charts with the **WHO Average** line (50th percentile) and shaded bands for the P1-P99 and P25-P75 percentile ranges.
 
-### Data source
+### Register Measurements
 
-You can choose between two data sources:
+Click the **"Register Weight"** button (or Height / Head Circumference depending on the selected metric) to quickly add a new measurement. A dialog opens where you enter the value and date (defaults to today). If no profile is active, the button lets you create one.
 
+### Data Source
+
+You can choose between two sources:
+
+- **Saved history** — Uses measurements saved from the Calculator. Automatically selected when history is available.
 - **Excel file** — Upload your own `.xlsx` file with measurements.
-- **Saved history** — Use measurements saved from the Calculator (requires an active baby profile with saved measurements). This is selected automatically when history is available.
 
-### Uploading your data
+### Growth Chart
 
-1. Click the **Upload** area or drag and drop your file.
-2. The chart will display your baby's data as a colored line on top of the percentile curves.
-3. A second chart will appear showing the estimated percentile at each recorded day.
-4. To remove the uploaded data, click the **×** button next to the file name.
+The chart shows:
+- **Solid blue line**: WHO Average (50th percentile).
+- **Darker blue band**: P25-P75 range (normal zone).
+- **Lighter blue band**: P1-P99 range (wide zone).
+- **Baby's line**: Your baby's measurements overlaid.
 
-### Percentile change alerts
+The X-axis shows age in months, with "Birth" as the starting point.
 
-If your baby's percentile changes significantly between measurements (more than 20 points), the app will display an alert:
+### Alerts
 
-- **Drops** are highlighted in red with a recommendation to consult your pediatrician.
-- **Rises** are highlighted in green.
+The right sidebar shows alerts if:
+- The **current percentile** is low or very low.
+- There has been a **significant percentile change** between measurements (rise or drop of 20 points or more).
 
-### Exporting charts
+### Export Charts
 
-Click the **"Export chart"** button above the chart to download it as a PNG image — useful for sharing with your pediatrician or family. On mobile, rotating to landscape mode gives you a full-screen chart view.
+Click **"Export chart"** to download it as a PNG image.
 
-### Downloading the template
+### Excel File Format
 
-If you don't have an Excel file yet, click **"Download template"** to get a pre-filled `.xlsx` file with the correct format and sample data. You can then replace the sample values with your baby's real measurements.
-
-### Excel file format
-
-Your Excel file must have these **4 columns** as headers in the first row:
+Your Excel file must have these **4 columns** as headers:
 
 | Column | Description | Example |
 |--------|-------------|---------|
@@ -92,28 +102,20 @@ Your Excel file must have these **4 columns** as headers in the first row:
 
 **Tips:**
 
-- Column names must be **exactly** as shown above (lowercase).
-- You can leave cells empty if you don't have that measurement — gaps will be linearly interpolated.
-- Use decimal point (`.`) not comma (`,`) for decimal values.
-- Data must be in the **first sheet** of the Excel file.
+- Column names must be **exactly** as shown (lowercase).
+- You can leave cells empty — gaps are linearly interpolated.
+- Use period (`.`) for decimals.
+- Data must be on the **first sheet** of the Excel file.
 
-### Example
+## Data Sources
 
-| day | w    | h  | hc |
-|-----|------|----|----|
-| 0   | 3.2  | 50 | 35 |
-| 30  | 4.1  | 54 | 37 |
-| 60  | 5.0  | 58 | 39 |
-| 90  | 5.8  | 61 | 40 |
+Sources used for milestones and standards are linked in the footer:
 
-## Settings
-
-- **Metric:** Weight, Height, or Head Circumference — changes the Evolution page chart. The Calculator always shows all three.
-- **Gender:** Boys or Girls — WHO growth curves differ by gender.
-- **Baby profile:** Create and manage profiles for your babies. Select the active profile to save and retrieve measurements.
-- **Language:** English, Spanish, or Catalan.
-- **Theme:** Light or dark mode, toggled from the top-right corner.
+- **WHO Child Growth Standards** — Weight, height, and head circumference percentile curves.
+- **AAP Bright Futures** — Pediatric checkup schedule.
+- **WHO Infant Feeding Guidelines** — Nutrition milestones.
+- **WHO Motor Development Study** — Motor development milestones.
 
 ## Medical Disclaimer
 
-This tool is for **informational purposes only**. For any health concerns about your baby's growth, please consult a pediatrician or healthcare professional. The percentile data comes from the WHO Child Growth Standards.
+This tool is for **informational purposes only**. For any concerns about your baby's growth, consult a pediatrician or healthcare professional.
